@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>凯利公式模拟器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #060a12;
+            --card: rgba(12, 20, 35, 0.85);
+            --card-solid: #0c1423;
+            --border: rgba(16, 185, 129, 0.12);
+            --border-hover: rgba(16, 185, 129, 0.3);
+            --accent: #10b981;
+            --accent-dim: rgba(16, 185, 129, 0.15);
+            --gold: #f59e0b;
+            --gold-dim: rgba(245, 158, 11, 0.15);
+            --red: #ef4444;
+            --red-dim: rgba(239, 68, 68, 0.15);
+            --fg: #e2e8f0;
+            --muted: #64748b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 背景网格 */
+        .bg-grid {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background-image:
+                linear-gradient(rgba(16,185,129,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16,185,129,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        /* 背景光晕 */
+        .bg-glow {
+            position: fixed; z-index: 0; pointer-events: none;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.4;
+        }
+        .bg-glow-1 {
+            width: 600px; height: 600px;
+            top: -200px; left: -100px;
+            background: radial-gradient(circle, rgba(16,185,129,0.15), transparent 70%);
+            animation: glowDrift1 20s ease-in-out infinite;
+        }
+        .bg-glow-2 {
+            width: 500px; height: 500px;
+            bottom: -150px; right: -100px;
+            background: radial-gradient(circle, rgba(245,158,11,0.1), transparent 70%);
+            animation: glowDrift2 25s ease-in-out infinite;
+        }
+        .bg-glow-3 {
+            width: 400px; height: 400px;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(16,185,129,0.06), transparent 70%);
+            animation: glowPulse 8s ease-in-out infinite;
+        }
+
+        @keyframes glowDrift1 {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(80px, 60px); }
+        }
+        @keyframes glowDrift2 {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(-60px, -40px); }
+        }
+        @keyframes glowPulse {
+            0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.5; transform: translate(-50%, -50%) scale(1.2); }
+        }
+
+        /* 卡片样式 */
+        .glass-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            backdrop-filter: blur(20px);
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-card:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 0 30px rgba(16,185,129,0.05);
+        }
+
+        /* 滑块样式 */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(100, 116, 139, 0.2);
+            outline: none;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 10px rgba(16,185,129,0.4);
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 16px rgba(16,185,129,0.6);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 10px rgba(16,185,129,0.4);
+            cursor: pointer;
+            border: none;
+        }
+
+        /* 数字输入框 */
+        .num-input {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(6, 10, 18, 0.6);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--accent);
+            padding: 4px 8px;
+            width: 72px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+        .num-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-dim);
+        }
+
+        /* 按钮 */
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            cursor: pointer;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 15px rgba(16,185,129,0.25);
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(16,185,129,0.35);
+        }
+        .btn-primary:active { transform: translateY(0); }
+
+        .btn-secondary {
+            background: rgba(100, 116, 139, 0.15);
+            color: var(--muted);
+            font-weight: 500;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: 1px solid rgba(100, 116, 139, 0.2);
+            cursor: pointer;
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 15px;
+            transition: all 0.2s ease;
+        }
+        .btn-secondary:hover {
+            background: rgba(100, 116, 139, 0.25);
+            color: var(--fg);
+            border-color: rgba(100, 116, 139, 0.4);
+        }
+
+        /* 统计卡片 */
+        .stat-card {
+            background: rgba(6, 10, 18, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            border-color: var(--border-hover);
+            background: rgba(6, 10, 18, 0.7);
+        }
+
+        /* 公式区域 */
+        .formula-box {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 20px;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        /* 标签 */
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .tag-green { background: var(--accent-dim); color: var(--accent); }
+        .tag-gold { background: var(--gold-dim); color: var(--gold); }
+        .tag-red { background: var(--red-dim); color: var(--red); }
+
+        /* 图例 */
+        .legend-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 1000;
+            padding: 14px 22px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            transform: translateX(120%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            backdrop-filter: blur(12px);
+        }
+        .toast.show { transform: translateX(0); }
+        .toast-warn {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: var(--gold);
+        }
+        .toast-error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--red);
+        }
+        .toast-success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--accent);
+        }
+
+        /* 滚动条 */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.3); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,0.5); }
+
+        /* 入场动画 */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in {
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+
+        /* 脉冲点 */
+        @keyframes pulse-dot {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(16,185,129,0); }
+        }
+        .pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .main-grid { grid-template-columns: 1fr !important; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景装饰 -->
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="bg-glow bg-glow-3"></div>
+
+    <!-- Toast 容器 -->
+    <div id="toast" class="toast"></div>
+
+    <div class="relative z-10 min-h-screen p-4 md:p-6 lg:p-8">
+        <!-- 头部 -->
+        <header class="max-w-7xl mx-auto mb-8 animate-in">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-3 h-3 rounded-full bg-emerald-500 pulse-dot"></div>
+                <span class="text-xs font-mono tracking-widest uppercase" style="color: var(--muted);">Kelly Criterion Simulator</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight" style="color: var(--fg);">
+                凯利公式<span style="color: var(--accent);">模拟器</span>
+            </h1>
+            <p class="mt-2 text-base" style="color: var(--muted); max-width: 600px;">
+                通过蒙特卡洛模拟，直观对比不同下注比例对资金曲线的影响。找到属于你的最优下注策略。
+            </p>
+        </header>
+
+        <!-- 主内容区 -->
+        <div class="max-w-7xl mx-auto main-grid" style="display: grid; grid-template-columns: 380px 1fr; gap: 24px; align-items: start;">
+
+            <!-- 左侧面板 -->
+            <aside class="space-y-5">
+                <!-- 参数配置 -->
+                <div class="glass-card p-6 animate-in delay-1">
+                    <div class="flex items-center gap-2 mb-5">
+                        <i class="fa-solid fa-sliders" style="color: var(--accent); font-size: 14px;"></i>
+                        <span class="text-sm font-semibold tracking-wide uppercase" style="color: var(--muted);">参数配置</span>
+                    </div>
+
+                    <!-- 胜率 -->
+                    <div class="mb-5">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-sm font-medium" style="color: var(--fg);">胜率 (p)</label>
+                            <input type="number" id="winRateNum" class="num-input" value="55" min="1" max="99" step="1">
+                        </div>
+                        <input type="range" id="winRateSlider" min="1" max="99" value="55" step="1">
+                        <div class="flex justify-between mt-1">
+                            <span class="text-xs" style="color: var(--muted);">1%</span>
+                            <span class="text-xs" style="color: var(--muted);">99%</span>
+                        </div>
+                    </div>
+
+                    <!-- 赔率 -->
+                    <div class="mb-5">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-sm font-medium" style="color: var(--fg);">赔率 (b)</label>
+                            <input type="number" id="oddsNum" class="num-input" value="1" min="0.1" max="20" step="0.1">
+                        </div>
+                        <input type="range" id="oddsSlider" min="0.1" max="20" value="1" step="0.1">
+                        <div class="flex justify-between mt-1">
+                            <span class="text-xs" style="color: var(--muted);">0.1</span>
+                            <span class="text-xs" style="color: var(--muted);">20</span>
+                        </div>
+                    </div>
+
+                    <!-- Half Kelly -->
+                    <div class="mb-5">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-sm font-medium" style="color: var(--fg);">Half Kelly (使用凯利公式一半的建议值，降低波动率)</label>
+                            <input type="number" id="halfKellyNum" class="num-input" value="50" min="0" max="100" step="5">
+                        </div>
+                        <input type="range" id="halfKellySlider" min="0" max="100" value="50" step="5">
+                        <div class="flex justify-between mt-1">
+                            <span class="text-xs" style="color: var(--muted);">0%</span>
+                            <span class="text-xs" style="color: var(--muted);">100%</span>
+                        </div>
+                    </div>
+
+                    <!-- 下注比例 -->
+                    <div class="mb-5">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-sm font-medium" style="color: var(--fg);">自定义下注比例</label>
+                            <input type="number" id="customBetNum" class="num-input" value="10" min="0" max="100" step="1">
+                        </div>
+                        <input type="range" id="customBetSlider" min="0" max="100" value="10" step="1">
+                        <div class="flex justify-between mt-1">
+                            <span class="text-xs" style="color: var(--muted);">0%</span>
+                            <span class="text-xs" style="color: var(--muted);">100%</span>
+                        </div>
+                    </div>
+
+                    <!-- 交易次数 & 模拟次数 -->
+                    <div class="grid grid-cols-2 gap-3 mb-6">
+                        <div>
+                            <label class="text-xs font-medium block mb-1.5" style="color: var(--muted);">交易次数</label>
+                            <input type="number" id="tradesNum" class="num-input w-full" value="200" min="10" max="2000" step="10" style="width: 100%;">
+                        </div>
+                        <div>
+                            <label class="text-xs font-medium block mb-1.5" style="color: var(--muted);">模拟路径数</label>
+                            <input type="number" id="simCountNum" class="num-input w-full" value="1" min="1" max="20" step="1" style="width: 100%;">
+                        </div>
+                    </div>
+
+                    <!-- 按钮 -->
+                    <div class="flex gap-3">
+                        <button id="runBtn" class="btn-primary flex-1 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-play text-xs"></i>
+                            运行模拟
+                        </button>
+                        <!-- <button id="resetBtn" class="btn-secondary flex items-center justify-center gap-2" style="width: 100px;">
+                            <i class="fa-solid fa-rotate-right text-xs"></i>
+                            重置
+                        </button> -->
+                    </div>
+                </div>
+
+                <!-- 凯利公式 -->
+                <div class="glass-card p-6 animate-in delay-2">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i class="fa-solid fa-square-root-variable" style="color: var(--gold); font-size: 14px;"></i>
+                        <span class="text-sm font-semibold tracking-wide uppercase" style="color: var(--muted);">凯利公式</span>
+                    </div>
+                    <div class="formula-box mb-4">
+                        <div class="text-center" style="color: var(--fg); font-size: 18px; font-weight: 600;">
+                            f* = <span style="color: var(--accent);">p</span> - <span style="color: var(--red);">(1-p)</span> / <span style="color: var(--gold);">b</span>
+                        </div>
+                    </div>
+                    <div class="space-y-2 text-xs" style="color: var(--muted);">
+                        <div class="flex justify-between">
+                            <span>f* (最优比例)</span>
+                            <span id="kellyValue" class="font-mono font-bold" style="color: var(--accent);">10.00%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Half Kelly</span>
+                            <span id="halfKellyValue" class="font-mono font-bold" style="color: var(--gold);">5.00%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>期望对数增长率</span>
+                            <span id="growthRateValue" class="font-mono font-bold" style="color: var(--fg);">0.0050</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>自定义比例</span>
+                            <span id="customBetValue" class="font-mono font-bold" style="color: #8b5cf6;">10.00%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 图例 -->
+                <div class="glass-card p-5 animate-in delay-3">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="fa-solid fa-palette" style="color: var(--muted); font-size: 13px;"></i>
+                        <span class="text-sm font-semibold tracking-wide uppercase" style="color: var(--muted);">图例</span>
+                    </div>
+                    <div class="space-y-2.5 text-sm">
+                        <div class="flex items-center gap-3">
+                            <span class="legend-dot" style="background: #10b981;"></span>
+                            <span style="color: var(--fg);">Full Kelly</span>
+                            <span class="tag tag-green ml-auto" id="legendKelly">10%</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="legend-dot" style="background: #f59e0b;"></span>
+                            <span style="color: var(--fg);">Half Kelly</span>
+                            <span class="tag tag-gold ml-auto" id="legendHalf">5%</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="legend-dot" style="background: #8b5cf6;"></span>
+                            <span style="color: var(--fg);">自定义比例</span>
+                            <span class="tag ml-auto" style="background: rgba(139,92,246,0.15); color: #8b5cf6;" id="legendCustom">10%</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- 右侧内容 -->
+            <main class="space-y-5">
+                <!-- 统计卡片 -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 animate-in delay-2">
+                    <div class="stat-card">
+                        <div class="text-xs mb-1" style="color: var(--muted);">Full Kelly 终值</div>
+                        <div class="font-mono text-xl font-bold" style="color: var(--accent);" id="statKelly">--</div>
+                        <div class="text-xs font-mono mt-1" id="statKellyReturn" style="color: var(--muted);">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="text-xs mb-1" style="color: var(--muted);">Half Kelly 终值</div>
+                        <div class="font-mono text-xl font-bold" style="color: var(--gold);" id="statHalf">--</div>
+                        <div class="text-xs font-mono mt-1" id="statHalfReturn" style="color: var(--muted);">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="text-xs mb-1" style="color: var(--muted);">自定义终值</div>
+                        <div class="font-mono text-xl font-bold" style="color: #8b5cf6;" id="statCustom">--</div>
+                        <div class="text-xs font-mono mt-1" id="statCustomReturn" style="color: var(--muted);">--</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="text-xs mb-1" style="color: var(--muted);">最大回撤</div>
+                        <div class="font-mono text-xl font-bold" style="color: var(--red);" id="statDrawdown">--</div>
+                        <div class="text-xs font-mono mt-1" id="statDrawdownLabel" style="color: var(--muted);">Full Kelly</div>
+                    </div>
+                </div>
+
+                <!-- 图表 -->
+                <div class="glass-card p-5 animate-in delay-3" style="min-height: 480px;">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line" style="color: var(--accent); font-size: 14px;"></i>
+                            <span class="text-sm font-semibold" style="color: var(--fg);">资金曲线</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button id="toggleLogBtn" class="text-xs px-3 py-1.5 rounded-lg font-medium transition-all" style="background: var(--accent-dim); color: var(--accent); border: 1px solid var(--border);">
+                                线性 / 对数
+                            </button>
+                        </div>
+                    </div>
+                    <div style="position: relative; height: 420px;">
+                        <canvas id="chartCanvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- 策略洞察 -->
+                <div class="glass-card p-5 animate-in delay-4">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="fa-solid fa-lightbulb" style="color: var(--gold); font-size: 14px;"></i>
+                        <span class="text-sm font-semibold" style="color: var(--fg);">策略洞察</span>
+                    </div>
+                    <div id="insightText" class="text-sm leading-relaxed" style="color: var(--muted);">
+                        调整左侧参数并点击「运行模拟」，查看不同下注策略的资金曲线对比。
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="max-w-7xl mx-auto mt-12 pb-6 text-center">
+            <p class="text-xs" style="color: rgba(100,116,139,0.5);">Kelly Criterion Simulator &mdash; 蒙特卡洛模拟仅供学习参考，不构成任何投资建议</p>
+        </footer>
+    </div>
+
+    <script>
+        /* ===== 工具函数 ===== */
+
+        // 显示 Toast 提示
+        function showToast(msg, type) {
+            var toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast toast-' + type + ' show';
+            clearTimeout(toast._timer);
+            toast._timer = setTimeout(function() {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // 格式化数字
+        function fmtNum(n, decimals) {
+            if (decimals === undefined) decimals = 2;
+            if (n >= 1e6) return (n / 1e6).toFixed(1) + 'M';
+            if (n >= 1e4) return (n / 1e3).toFixed(1) + 'K';
+            return n.toFixed(decimals);
+        }
+
+        // 计算凯利比例
+        function calcKelly(p, b) {
+            var f = p - (1 - p) / b;
+            return Math.max(0, f);
+        }
+
+        // 计算期望对数增长率 G = p*ln(1+f*b) + (1-p)*ln(1-f)
+        function calcGrowthRate(p, b, f) {
+            if (f <= 0 || f >= 1) return -Infinity;
+            var win = 1 + f * b;
+            var lose = 1 - f;
+            if (win <= 0 || lose <= 0) return -Infinity;
+            return p * Math.log(win) + (1 - p) * Math.log(lose);
+        }
+
+        // 蒙特卡洛模拟
+        function simulate(p, b, f, nTrades, nSims) {
+            var results = [];
+            for (var s = 0; s < nSims; s++) {
+                var balance = 1.0;
+                var path = [balance];
+                for (var t = 0; t < nTrades; t++) {
+                    var rand = Math.random();
+                    if (rand < p) {
+                        balance *= (1 + f * b);
+                    } else {
+                        balance *= (1 - f);
+                    }
+                    // 防止浮点溢出
+                    if (balance > 1e15) balance = 1e15;
+                    if (balance < 1e-15) balance = 1e-15;
+                    path.push(balance);
+                }
+                results.push(path);
+            }
+            return results;
+        }
+
+        // 计算最大回撤
+        function calcMaxDrawdown(path) {
+            var peak = path[0];
+            var maxDD = 0;
+            for (var i = 1; i < path.length; i++) {
+                if (path[i] > peak) peak = path[i];
+                var dd = (peak - path[i]) / peak;
+                if (dd > maxDD) maxDD = dd;
+            }
+            return maxDD;
+        }
+
+        /* ===== 参数联动 ===== */
+
+        var params = {
+            winRate: 55,
+            odds: 1,
+            halfKelly: 50,
+            customBet: 10,
+            trades: 200,
+            simCount: 1
+        };
+
+        // 滑块和输入框双向绑定
+        function bindSliderNum(sliderId, numId, paramKey, onChange) {
+            var slider = document.getElementById(sliderId);
+            var num = document.getElementById(numId);
+
+            slider.addEventListener('input', function() {
+                num.value = slider.value;
+                params[paramKey] = parseFloat(slider.value);
+                if (onChange) onChange();
+            });
+
+            num.addEventListener('input', function() {
+                var v = parseFloat(num.value);
+                if (isNaN(v)) return;
+                v = Math.max(parseFloat(slider.min), Math.min(parseFloat(slider.max), v));
+                slider.value = v;
+                params[paramKey] = v;
+                if (onChange) onChange();
+            });
+
+            num.addEventListener('blur', function() {
+                var v = parseFloat(num.value);
+                if (isNaN(v)) v = params[paramKey];
+                v = Math.max(parseFloat(slider.min), Math.min(parseFloat(slider.max), v));
+                num.value = v;
+                slider.value = v;
+                params[paramKey] = v;
+                if (onChange) onChange();
+            });
+        }
+
+        function updateFormulaDisplay() {
+            var p = params.winRate / 100;
+            var b = params.odds;
+            var kelly = calcKelly(p, b);
+            var hk = kelly * params.halfKelly / 100;
+            var g = calcGrowthRate(p, b, kelly);
+
+            document.getElementById('kellyValue').textContent = (kelly * 100).toFixed(2) + '%';
+            document.getElementById('Value').textContent = (hk * 100).toFixed(2) + '%';
+            document.getElementById('growthRateValue').textContent = g > -Infinity ? g.toFixed(4) : '--';
+            document.getElementById('customBetValue').textContent = params.customBet.toFixed(1) + '%';
+
+            // 更新图例标签
+            document.getElementById('legendKelly').textContent = (kelly * 100).toFixed(1) + '%';
+            document.getElementById('legendHalf').textContent = (hk * 100).toFixed(1) + '%';
+            document.getElementById('legendCustom').textContent = params.customBet.toFixed(1) + '%';
+
+            // 如果凯利值为0，改变颜色
+            var kellyEl = document.getElementById('kellyValue');
+            kellyEl.style.color = kelly <= 0 ? 'var(--red)' : 'var(--accent)';
+        }
+
+        bindSliderNum('winRateSlider', 'winRateNum', 'winRate', updateFormulaDisplay);
+        bindSliderNum('oddsSlider', 'oddsNum', 'odds', updateFormulaDisplay);
+        bindSliderNum('halfKellySlider', 'halfKellyNum', 'halfKelly', updateFormulaDisplay);
+        bindSliderNum('customBetSlider', 'customBetNum', 'customBet', updateFormulaDisplay);
+
+        // 交易次数和模拟次数只绑定数字输入
+        document.getElementById('tradesNum').addEventListener('input', function() {
+            var v = parseInt(this.value);
+            if (!isNaN(v) && v >= 10 && v <= 2000) params.trades = v;
+        });
+        document.getElementById('simCountNum').addEventListener('input', function() {
+            var v = parseInt(this.value);
+            if (!isNaN(v) && v >= 1 && v <= 20) params.simCount = v;
+        });
+
+        /* ===== Chart.js 初始化 ===== */
+
+        var ctx = document.getElementById('chartCanvas').getContext('2d');
+        var isLogScale = false;
+        var chart = null;
+
+        function createChart() {
+            if (chart) chart.destroy();
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: [], datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: { duration: 800, easing: 'easeOutQuart' },
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(12, 20, 35, 0.95)',
+                            borderColor: 'rgba(16, 185, 129, 0.2)',
+                            borderWidth: 1,
+                            titleColor: '#e2e8f0',
+                            bodyColor: '#94a3b8',
+                            titleFont: { family: 'Space Grotesk', size: 13, weight: '600' },
+                            bodyFont: { family: 'JetBrains Mono', size: 12 },
+                            padding: 12,
+                            cornerRadius: 10,
+                            callbacks: {
+                                label: function(context) {
+                                    var val = context.parsed.y;
+                                    return context.dataset.label + ': ' + fmtNum(val, val < 10 ? 4 : 2);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: 'rgba(100,116,139,0.08)', drawBorder: false },
+                            ticks: {
+                                color: '#475569',
+                                font: { family: 'JetBrains Mono', size: 11 },
+                                maxTicksLimit: 12
+                            },
+                            title: {
+                                display: true,
+                                text: '交易次数',
+                                color: '#64748b',
+                                font: { family: 'Space Grotesk', size: 12, weight: '500' }
+                            }
+                        },
+                        y: {
+                            type: isLogScale ? 'logarithmic' : 'linear',
+                            grid: { color: 'rgba(100,116,139,0.08)', drawBorder: false },
+                            ticks: {
+                                color: '#475569',
+                                font: { family: 'JetBrains Mono', size: 11 },
+                                callback: function(val) {
+                                    if (isLogScale) {
+                                        if (val === 1 || val === 10 || val === 100 || val === 1000 || val === 0.1 || val === 0.01) return val;
+                                        return '';
+                                    }
+                                    return fmtNum(val, 0);
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Balance (初始 = 1)',
+                                color: '#64748b',
+                                font: { family: 'Space Grotesk', size: 12, weight: '500' }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        createChart();
+
+        /* ===== 运行模拟 ===== */
+
+        // 为每条路径生成半透明颜色
+        function makeDataset(label, paths, color, dash) {
+            var datasets = [];
+            // 取第一条路径作为主线条，其余为半透明
+            for (var i = 0; i < paths.length; i++) {
+                var alpha = paths.length === 1 ? 0.9 : (i === 0 ? 0.85 : 0.2 + 0.15 * (i / paths.length));
+                var borderWidth = paths.length === 1 ? 2.5 : (i === 0 ? 2.5 : 1.2);
+                var r = parseInt(color.slice(1, 3), 16);
+                var g = parseInt(color.slice(3, 5), 16);
+                var b = parseInt(color.slice(5, 7), 16);
+
+                datasets.push({
+                    label: label + (paths.length > 1 ? ' #' + (i + 1) : ''),
+                    data: paths[i],
+                    borderColor: 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')',
+                    backgroundColor: 'rgba(' + r + ',' + g + ',' + b + ',0.05)',
+                    borderWidth: borderWidth,
+                    borderDash: dash || [],
+                    pointRadius: 0,
+                    pointHoverRadius: 4,
+                    pointHoverBackgroundColor: 'rgba(' + r + ',' + g + ',' + b + ',1)',
+                    fill: false,
+                    tension: 0.1
+                });
+            }
+            return datasets;
+        }
+
+        function runSimulation() {
+            var p = params.winRate / 100;
+            var b = params.odds;
+            var kellyF = calcKelly(p, b);
+            var halfKellyF = kellyF * params.halfKelly / 100;
+            var customF = params.customBet / 100;
+            var nTrades = params.trades;
+            var nSims = params.simCount;
+
+            // 验证
+            if (kellyF <= 0) {
+                showToast('当前参数下凯利比例为0或负数，不建议下注', 'warn');
+            }
+            if (customF >= 1) {
+                showToast('自定义下注比例不能超过100%', 'error');
+                return;
+            }
+            if (halfKellyF >= 1) {
+                showToast('Half Kelly 比例超过100%，请调整参数', 'error');
+                return;
+            }
+
+            // 运行模拟
+            var kellyPaths = simulate(p, b, kellyF, nTrades, nSims);
+            var halfKellyPaths = simulate(p, b, halfKellyF, nTrades, nSims);
+            var customPaths = simulate(p, b, customF, nTrades, nSims);
+
+            // 生成标签
+            var labels = [];
+            for (var i = 0; i <= nTrades; i++) labels.push(i);
+
+            // 构建数据集
+            var allDatasets = [];
+
+            // Full Kelly 路径
+            var kellyDS = makeDataset('Full Kelly', kellyPaths, '#10b981', []);
+            allDatasets = allDatasets.concat(kellyDS);
+
+            // Half Kelly 路径
+            var halfDS = makeDataset('Half Kelly', halfKellyPaths, '#f59e0b', [6, 3]);
+            allDatasets = allDatasets.concat(halfDS);
+
+            // 自定义比例路径
+            if (Math.abs(customF - kellyF) > 0.001 && Math.abs(customF - halfKellyF) > 0.001) {
+                var customDS = makeDataset('自定义', customPaths, '#8b5cf6', [2, 2]);
+                allDatasets = allDatasets.concat(customDS);
+            }
+
+            // 更新图表
+            chart.data.labels = labels;
+            chart.data.datasets = allDatasets;
+            chart.options.scales.y.type = isLogScale ? 'logarithmic' : 'linear';
+            chart.update();
+
+            // 更新统计
+            // 使用第一条路径的终值
+            var kellyFinal = kellyPaths[0][kellyPaths[0].length - 1];
+            var halfFinal = halfKellyPaths[0][halfKellyPaths[0].length - 1];
+            var customFinal = customPaths[0][customPaths[0].length - 1];
+
+            document.getElementById('statKelly').textContent = fmtNum(kellyFinal);
+            document.getElementById('statKellyReturn').textContent = ((kellyFinal - 1) * 100).toFixed(1) + '% 收益';
+            document.getElementById('statKellyReturn').style.color = kellyFinal >= 1 ? 'var(--accent)' : 'var(--red)';
+
+            document.getElementById('statHalf').textContent = fmtNum(halfFinal);
+            document.getElementById('statHalfReturn').textContent = ((halfFinal - 1) * 100).toFixed(1) + '% 收益';
+            document.getElementById('statHalfReturn').style.color = halfFinal >= 1 ? 'var(--accent)' : 'var(--red)';
+
+            document.getElementById('statCustom').textContent = fmtNum(customFinal);
+            document.getElementById('statCustomReturn').textContent = ((customFinal - 1) * 100).toFixed(1) + '% 收益';
+            document.getElementById('statCustomReturn').style.color = customFinal >= 1 ? 'var(--accent)' : 'var(--red)';
+
+            // 最大回撤（Full Kelly 第一条路径）
+            var maxDD = calcMaxDrawdown(kellyPaths[0]);
+            document.getElementById('statDrawdown').textContent = '-' + (maxDD * 100).toFixed(1) + '%';
+
+            // 策略洞察
+            generateInsight(p, b, kellyF, halfKellyF, customF, kellyPaths, halfKellyPaths, customPaths);
+
+            showToast('模拟完成，共 ' + nTrades + ' 次交易 x ' + nSims + ' 条路径', 'success');
+        }
+
+        function generateInsight(p, b, kellyF, halfKellyF, customF, kellyPaths, halfKellyPaths, customPaths) {
+            var el = document.getElementById('insightText');
+            var parts = [];
+
+            // 凯利值分析
+            if (kellyF <= 0) {
+                parts.push('<span style="color:var(--red);">当前参数下期望值为负（p=' + (p*100).toFixed(0) + '%, b=' + b.toFixed(1) + '），最优策略是不下注。</span>');
+            } else {
+                parts.push('Full Kelly 比例为 <span style="color:var(--accent);">' + (kellyF*100).toFixed(2) + '%</span>，');
+
+                // Half Kelly vs Full Kelly
+                var kellyVol = 0, halfVol = 0;
+                for (var i = 1; i < kellyPaths[0].length; i++) {
+                    kellyVol += Math.abs(Math.log(kellyPaths[0][i] / kellyPaths[0][i-1]));
+                }
+                for (var i = 1; i < halfKellyPaths[0].length; i++) {
+                    halfVol += Math.abs(Math.log(halfKellyPaths[0][i] / halfKellyPaths[0][i-1]));
+                }
+                kellyVol /= (kellyPaths[0].length - 1);
+                halfVol /= (halfKellyPaths[0].length - 1);
+
+                if (halfVol > 0) {
+                    var volReduction = ((kellyVol - halfVol) / kellyVol * 100).toFixed(0);
+                    parts.push('Half Kelly (' + (halfKellyF*100).toFixed(2) + '%) 波动率降低约 <span style="color:var(--gold);">' + volReduction + '%</span>，');
+                }
+
+                // 自定义比例分析
+                if (customF > kellyF) {
+                    parts.push('自定义比例 <span style="color:#8b5cf6;">' + (customF*100).toFixed(1) + '%</span> 超过了 Full Kelly，<span style="color:var(--red);">过度下注会降低长期增长率并大幅增加回撤风险</span>。');
+                } else if (customF > 0 && customF < kellyF) {
+                    var gKelly = calcGrowthRate(p, b, kellyF);
+                    var gCustom = calcGrowthRate(p, b, customF);
+                    if (gKelly > -Infinity && gCustom > -Infinity) {
+                        var efficiency = (gCustom / gKelly * 100).toFixed(0);
+                        parts.push('自定义比例的长期增长效率为 Full Kelly 的 <span style="color:#8b5cf6;">' + efficiency + '%</span>。');
+                    }
+                }
+
+                // 通用建议
+                parts.push('实践中，Half Kelly 常被推荐作为更稳健的选择——它牺牲少量增长率，换取显著更低的波动和回撤。');
+            }
+
+            el.innerHTML = parts.join('');
+        }
+
+        /* ===== 事件绑定 ===== */
+
+        document.getElementById('runBtn').addEventListener('click', runSimulation);
+
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            // 重置参数
+            params = { winRate: 55, odds: 1, halfKelly: 50, customBet: 10, trades: 200, simCount: 1 };
+
+            document.getElementById('winRateSlider').value = 55;
+            document.getElementById('winRateNum').value = 55;
+            document.getElementById('oddsSlider').value = 1;
+            document.getElementById('oddsNum').value = 1;
+            document.getElementById('halfKellySlider').value = 50;
+            document.getElementById('halfKellyNum').value = 50;
+            document.getElementById('customBetSlider').value = 10;
+            document.getElementById('customBetNum').value = 10;
+            document.getElementById('tradesNum').value = 200;
+            document.getElementById('simCountNum').value = 1;
+
+            updateFormulaDisplay();
+
+            // 清空图表
+            chart.data.labels = [];
+            chart.data.datasets = [];
+            chart.update();
+
+            // 清空统计
+            document.getElementById('statKelly').textContent = '--';
+            document.getElementById('statKellyReturn').textContent = '--';
+            document.getElementById('statKellyReturn').style.color = 'var(--muted)';
+            document.getElementById('statHalf').textContent = '--';
+            document.getElementById('statHalfReturn').textContent = '--';
+            document.getElementById('statHalfReturn').style.color = 'var(--muted)';
+            document.getElementById('statCustom').textContent = '--';
+            document.getElementById('statCustomReturn').textContent = '--';
+            document.getElementById('statCustomReturn').style.color = 'var(--muted)';
+            document.getElementById('statDrawdown').textContent = '--';
+            document.getElementById('insightText').innerHTML = '调整左侧参数并点击「运行模拟」，查看不同下注策略的资金曲线对比。';
+
+            showToast('已重置所有参数', 'success');
+        });
+
+        // 对数/线性切换
+        document.getElementById('toggleLogBtn').addEventListener('click', function() {
+            isLogScale = !isLogScale;
+            this.style.background = isLogScale ? 'var(--accent)' : 'var(--accent-dim)';
+            this.style.color = isLogScale ? '#fff' : 'var(--accent)';
+            chart.options.scales.y.type = isLogScale ? 'logarithmic' : 'linear';
+            chart.update();
+        });
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.target.matches('input')) {
+                runSimulation();
+            }
+        });
+
+        // 初始化公式显示
+        updateFormulaDisplay();
+
+        window.onload = function() {
+            console.log("run sim")
+            runSimulation();
+        };
+    </script>
+</body>
+</html>
