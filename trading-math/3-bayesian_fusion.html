@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>贝叶斯信号融合演示</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root {
+  --bg: #060a12;
+  --bg2: #0c1220;
+  --card: #111a2e;
+  --card2: #162038;
+  --border: #1e2d4a;
+  --fg: #e2e8f0;
+  --muted: #64748b;
+  --accent: #f59e0b;
+  --accent2: #fbbf24;
+  --long: #10b981;
+  --long-dim: rgba(16,185,129,0.15);
+  --short: #ef4444;
+  --short-dim: rgba(239,68,68,0.15);
+  --neutral: #64748b;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans SC', sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* 背景网格 */
+.grid-bg {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(245,158,11,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.grid-bg::after {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(245,158,11,0.06) 0%, transparent 60%),
+              radial-gradient(ellipse at 80% 80%, rgba(16,185,129,0.04) 0%, transparent 50%);
+}
+
+/* 卡片 */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.card:hover { border-color: rgba(245,158,11,0.3); }
+.card-glow-long { box-shadow: 0 0 20px rgba(16,185,129,0.15), inset 0 1px 0 rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.4); }
+.card-glow-short { box-shadow: 0 0 20px rgba(239,68,68,0.15), inset 0 1px 0 rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.4); }
+
+/* 按钮 */
+.btn-primary {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #000; font-weight: 700; border: none; border-radius: 10px;
+  padding: 14px 32px; font-size: 16px; cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.3s;
+  box-shadow: 0 4px 20px rgba(245,158,11,0.3);
+}
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 30px rgba(245,158,11,0.45); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.btn-secondary {
+  background: var(--card2); color: var(--fg); font-weight: 500;
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px 24px; font-size: 16px; cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.btn-secondary:hover { border-color: var(--accent); background: rgba(245,158,11,0.08); }
+
+/* 标签 */
+.tag-long { background: var(--long-dim); color: var(--long); border: 1px solid rgba(16,185,129,0.3); }
+.tag-short { background: var(--short-dim); color: var(--short); border: 1px solid rgba(239,68,68,0.3); }
+.tag-neutral { background: rgba(100,116,139,0.15); color: var(--muted); border: 1px solid rgba(100,116,139,0.3); }
+
+/* 步骤动画 */
+.step-item {
+  opacity: 0; transform: translateY(20px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.step-item.visible { opacity: 1; transform: translateY(0); }
+
+/* 概率条 */
+.prob-bar {
+  height: 8px; border-radius: 4px; background: var(--bg2);
+  overflow: hidden; position: relative;
+}
+.prob-bar-fill {
+  height: 100%; border-radius: 4px;
+  transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 仪表盘 */
+.gauge-container { position: relative; width: 280px; height: 160px; margin: 0 auto; }
+
+/* 公式高亮 */
+.formula-box {
+  background: rgba(245,158,11,0.06);
+  border: 1px solid rgba(245,158,11,0.2);
+  border-radius: 8px; padding: 16px 20px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px; line-height: 1.8;
+  overflow-x: auto;
+}
+.formula-box .hl { color: var(--accent); font-weight: 700; }
+.formula-box .hl-long { color: var(--long); font-weight: 700; }
+.formula-box .hl-short { color: var(--short); font-weight: 700; }
+
+/* 信号图标脉冲 */
+@keyframes pulse-long {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(16,185,129,0); }
+}
+@keyframes pulse-short {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+}
+.pulse-long { animation: pulse-long 2s infinite; }
+.pulse-short { animation: pulse-short 2s infinite; }
+
+/* 滚动条 */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .gauge-container { width: 220px; height: 130px; }
+}
+
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+</style>
+</head>
+<body>
+<div class="grid-bg" aria-hidden="true"></div>
+
+<div class="relative z-10 max-w-5xl mx-auto px-4 py-8 sm:py-12">
+
+  <!-- 标题区 -->
+  <header class="text-center mb-10">
+    <p class="mono text-xs tracking-widest text-amber-500/70 mb-3 uppercase">Bayesian Signal Fusion</p>
+    <h1 class="text-3xl sm:text-4xl font-black tracking-tight mb-3" style="color:var(--fg)">
+      从直觉到量化——贝叶斯信号融合
+    </h1>
+    <p class="text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
+      让每个信号带着自己的"历史信用"来投票，将盘感变成精确的数字
+    </p>
+  </header>
+
+  <!-- 控制面板 -->
+  <section class="card p-5 sm:p-6 mb-6">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-5">
+      <div class="flex items-center gap-3">
+        <span class="text-sm text-slate-400">市场状态</span>
+        <span id="regime-badge" class="mono text-xs px-3 py-1 rounded-full font-semibold"></span>
+      </div>
+      <div class="flex items-center gap-3 sm:ml-auto">
+        <span class="text-sm text-slate-400">先验概率 P(up)</span>
+        <div class="flex items-center gap-2">
+          <input type="range" id="prior-slider" min="10" max="90" value="50"
+            class="w-28 accent-amber-500 cursor-pointer" aria-label="先验概率">
+          <span id="prior-value" class="mono text-sm text-amber-400 w-10 text-right">50%</span>
+        </div>
+      </div>
+    </div>
+    <div class="flex flex-col sm:flex-row gap-3">
+      <button id="btn-generate" class="btn-secondary flex items-center justify-center gap-2" aria-label="随机生成信号">
+        <i class="fa-solid fa-shuffle"></i> 随机生成信号
+      </button>
+      <button id="btn-fuse" class="btn-primary flex items-center justify-center gap-2" disabled aria-label="开始融合">
+        <i class="fa-solid fa-bolt"></i> 开始贝叶斯融合
+      </button>
+    </div>
+  </section>
+
+  <!-- 信号卡片 -->
+  <section id="signals-section" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8" style="min-height:100px">
+    <div class="card p-6 flex items-center justify-center text-slate-500 text-sm border-dashed" style="grid-column:1/-1">
+      <i class="fa-solid fa-arrow-up-from-bracket mr-2"></i> 点击"随机生成信号"开始
+    </div>
+  </section>
+
+  <!-- 计算步骤 -->
+  <section id="steps-section" class="mb-8" style="display:none">
+    <h2 class="text-lg font-bold mb-4 flex items-center gap-2">
+      <i class="fa-solid fa-list-ol text-amber-500"></i> 计算步骤
+    </h2>
+    <div id="steps-container" class="space-y-4"></div>
+  </section>
+
+  <!-- 最终结果 -->
+  <section id="result-section" class="mb-12" style="display:none">
+    <h2 class="text-lg font-bold mb-6 flex items-center gap-2">
+      <i class="fa-solid fa-bullseye text-amber-500"></i> 融合结果
+    </h2>
+    <div class="card p-6 sm:p-8">
+      <div class="flex flex-col lg:flex-row items-center gap-8">
+        <!-- 仪表盘 -->
+        <div class="gauge-container flex-shrink-0">
+          <canvas id="gauge-canvas" width="560" height="320"></canvas>
+        </div>
+        <!-- 结果详情 -->
+        <div class="flex-1 w-full">
+          <div class="flex items-center gap-3 mb-4">
+            <span id="result-direction-icon" class="w-10 h-10 rounded-full flex items-center justify-center text-lg"></span>
+            <div>
+              <div id="result-direction-text" class="text-xl font-black"></div>
+              <div id="result-prob-text" class="mono text-sm text-slate-400"></div>
+            </div>
+          </div>
+          <!-- 概率条 -->
+          <div class="mb-4">
+            <div class="flex justify-between text-xs mono text-slate-500 mb-1">
+              <span>0% 看空</span><span>50%</span><span>100% 看多</span>
+            </div>
+            <div class="prob-bar" style="height:12px">
+              <div id="result-bar" class="prob-bar-fill" style="width:0%"></div>
+            </div>
+          </div>
+          <!-- 仓位建议 -->
+          <div id="position-advice" class="text-sm p-3 rounded-lg" style="background:var(--bg2)"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 底部说明 -->
+  <footer class="text-center text-xs text-slate-600 pb-8">
+    <p>贝叶斯信号融合演示 · 仅供学习参考，不构成投资建议</p>
+  </footer>
+</div>
+
+<script>
+// ========== 数据定义 ==========
+
+// 信号类型库
+const SIGNAL_TYPES = [
+  { id: 'ma_cross', name: '均线金叉', icon: 'fa-chart-line' },
+  { id: 'rsi', name: 'RSI 超卖反弹', icon: 'fa-wave-square' },
+  { id: 'bollinger', name: '布林带下轨', icon: 'fa-arrows-left-right-to-line' },
+  { id: 'macd', name: 'MACD 金叉', icon: 'fa-signal' },
+  { id: 'volume', name: '放量突破', icon: 'fa-chart-bar' },
+  { id: 'ema_cross', name: 'EMA 交叉', icon: 'fa-bezier-curve' },
+];
+
+// 不同行情下各信号的胜率（看多时）
+const WIN_RATES = {
+  ranging: { // 震荡行情
+    ma_cross: 0.45, rsi: 0.65, bollinger: 0.55,
+    macd: 0.42, volume: 0.48, ema_cross: 0.44,
+  },
+  trending: { // 趋势行情
+    ma_cross: 0.70, rsi: 0.50, bollinger: 0.45,
+    macd: 0.68, volume: 0.62, ema_cross: 0.66,
+  }
+};
+
+// 历史交易次数（模拟）
+const TOTAL_TRADES = {
+  ma_cross: 320, rsi: 280, bollinger: 250,
+  macd: 300, volume: 200, ema_cross: 260,
+};
+
+// 方向枚举
+const DIR = { LONG: 'LONG', SHORT: 'SHORT' };
+
+// ========== 状态 ==========
+let currentRegime = 'ranging';
+let currentSignals = [];
+let isAnimating = false;
+
+// ========== DOM 引用 ==========
+const regimeBadge = document.getElementById('regime-badge');
+const priorSlider = document.getElementById('prior-slider');
+const priorValue = document.getElementById('prior-value');
+const btnGenerate = document.getElementById('btn-generate');
+const btnFuse = document.getElementById('btn-fuse');
+const signalsSection = document.getElementById('signals-section');
+const stepsSection = document.getElementById('steps-section');
+const stepsContainer = document.getElementById('steps-container');
+const resultSection = document.getElementById('result-section');
+
+// ========== 工具函数 ==========
+
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function randChoice(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
+// 格式化概率
+function fmtProb(p) { return (p * 100).toFixed(2) + '%'; }
+
+// 获取先验概率
+function getPrior() { return parseInt(priorSlider.value) / 100; }
+
+// ========== 信号生成 ==========
+
+function generateSignals() {
+  if (isAnimating) return;
+
+  // 随机选择行情
+  currentRegime = Math.random() < 0.5 ? 'ranging' : 'trending';
+  updateRegimeBadge();
+
+  // 随机选3个不同信号
+  const shuffled = [...SIGNAL_TYPES].sort(() => Math.random() - 0.5);
+  const selected = shuffled.slice(0, 3);
+
+  // 为每个信号随机分配方向（偏向LONG多一点，让演示更有趣）
+  currentSignals = selected.map(st => {
+    const direction = Math.random() < 0.7 ? DIR.LONG : DIR.SHORT;
+    const winRate = WIN_RATES[currentRegime][st.id];
+    const total = TOTAL_TRADES[st.id];
+    const wins = Math.round(total * winRate);
+    return { ...st, direction, winRate, total, wins };
+  });
+
+  renderSignalCards();
+  btnFuse.disabled = false;
+
+  // 隐藏之前的计算步骤和结果
+  stepsSection.style.display = 'none';
+  resultSection.style.display = 'none';
+}
+
+function updateRegimeBadge() {
+  const isRanging = currentRegime === 'ranging';
+  regimeBadge.textContent = isRanging ? '震荡行情' : '趋势行情';
+  regimeBadge.style.background = isRanging ? 'rgba(245,158,11,0.15)' : 'rgba(59,130,246,0.15)';
+  regimeBadge.style.color = isRanging ? '#f59e0b' : '#3b82f6';
+  regimeBadge.style.borderColor = isRanging ? 'rgba(245,158,11,0.3)' : 'rgba(59,130,246,0.3)';
+  regimeBadge.style.border = `1px solid ${isRanging ? 'rgba(245,158,11,0.3)' : 'rgba(59,130,246,0.3)'}`;
+}
+
+function renderSignalCards() {
+  signalsSection.innerHTML = currentSignals.map((s, i) => {
+    const isLong = s.direction === DIR.LONG;
+    const dirClass = isLong ? 'tag-long' : 'tag-short';
+    const dirText = isLong ? '看多' : '看空';
+    const glowClass = isLong ? 'card-glow-long' : 'card-glow-short';
+    const pulseClass = isLong ? 'pulse-long' : 'pulse-short';
+    const iconColor = isLong ? 'var(--long)' : 'var(--short)';
+
+    // 计算条件概率
+    const pSiGivenUp = isLong ? s.winRate : (1 - s.winRate);
+    const pSiGivenDown = isLong ? (1 - s.winRate) : s.winRate;
+    const ratio = pSiGivenDown / pSiGivenUp;
+
+    return `
+      <div class="card ${glowClass} p-5 transition-all duration-500" style="animation-delay:${i * 100}ms">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center ${pulseClass}"
+               style="background:${isLong ? 'var(--long-dim)' : 'var(--short-dim)'}">
+            <i class="fa-solid ${s.icon}" style="color:${iconColor}"></i>
+          </div>
+          <div>
+            <div class="font-bold text-sm">${s.name}</div>
+            <span class="mono text-xs px-2 py-0.5 rounded-full ${dirClass}">${dirText}</span>
+          </div>
+        </div>
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between">
+            <span class="text-slate-500">历史胜率（${currentRegime === 'ranging' ? '震荡' : '趋势'}）</span>
+            <span class="mono font-semibold" style="color:var(--accent)">${fmtProb(s.winRate)}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">历史样本</span>
+            <span class="mono text-slate-300">${s.wins}/${s.total}</span>
+          </div>
+          <div class="h-px my-1" style="background:var(--border)"></div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">P(s<sub>i</sub>|up)</span>
+            <span class="mono text-emerald-400">${pSiGivenUp.toFixed(4)}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">P(s<sub>i</sub>|down)</span>
+            <span class="mono text-red-400">${pSiGivenDown.toFixed(4)}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">似然比 P(s<sub>i</sub>|down)/P(s<sub>i</sub>|up)</span>
+            <span class="mono font-bold" style="color:${ratio > 1 ? 'var(--short)' : 'var(--long)'}">${ratio.toFixed(4)}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ========== 贝叶斯融合计算 ==========
+
+function computeFusion() {
+  const prior = getPrior();
+  const signals = currentSignals;
+  const regime = currentRegime;
+
+  // 计算每个信号的条件概率和似然比
+  const signalData = signals.map(s => {
+    const isLong = s.direction === DIR.LONG;
+    const pSiGivenUp = isLong ? s.winRate : (1 - s.winRate);
+    const pSiGivenDown = isLong ? (1 - s.winRate) : s.winRate;
+    const ratio = pSiGivenDown / pSiGivenUp;
+    const logRatio = Math.log(ratio);
+    return { ...s, isLong, pSiGivenUp, pSiGivenDown, ratio, logRatio };
+  });
+
+  // 乘积
+  const productRatio = signalData.reduce((acc, sd) => acc * sd.ratio, 1);
+  const sumLogRatio = signalData.reduce((acc, sd) => acc + sd.logRatio, 0);
+
+  // 后验概率
+  const p = clamp(prior, 1e-6, 1 - 1e-6);
+  const posteriorUp = 1 / (1 + ((1 - p) / p) * productRatio);
+
+  return { prior, signalData, productRatio, sumLogRatio, posteriorUp, regime };
+}
+
+// ========== 步骤动画 ==========
+
+async function runFusion() {
+  if (isAnimating || currentSignals.length === 0) return;
+  isAnimating = true;
+  btnFuse.disabled = true;
+  btnGenerate.disabled = true;
+
+  const result = computeFusion();
+
+  // 显示步骤区域
+  stepsSection.style.display = 'block';
+  stepsContainer.innerHTML = '';
+
+  // 逐步添加
+  await addStep0(result);
+  await delay(400);
+  await addStep1(result);
+  await delay(400);
+  await addStep2(result);
+  await delay(400);
+  await addStep3(result);
+  await delay(400);
+  await addStep4(result);
+  await delay(600);
+
+  // 显示最终结果
+  resultSection.style.display = 'block';
+  resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  await animateResult(result);
+
+  isAnimating = false;
+  btnFuse.disabled = false;
+  btnGenerate.disabled = false;
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function createStepEl(html) {
+  const div = document.createElement('div');
+  div.className = 'step-item card p-5';
+  div.innerHTML = html;
+  stepsContainer.appendChild(div);
+  requestAnimationFrame(() => div.classList.add('visible'));
+  return div;
+}
+
+// 步骤0：先验概率
+async function addStep0(r) {
+  createStepEl(`
+    <div class="flex items-center gap-2 mb-3">
+      <span class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold mono">0</span>
+      <span class="font-bold text-sm">设定先验概率</span>
+    </div>
+    <div class="formula-box">
+      P(up) = <span class="hl">${fmtProb(r.prior)}</span>
+      <span class="text-slate-500 text-xs ml-2">（由滑块设定，或使用历史基准）</span>
+    </div>
+    <div class="mt-3 text-xs text-slate-500">
+      先验概率代表在收到任何信号之前，我们对市场上涨的信念。50% 表示完全中立。
+    </div>
+  `);
+  stepsContainer.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// 步骤1：条件概率
+async function addStep1(r) {
+  const rows = r.signalData.map(sd => {
+    const dirSymbol = sd.isLong ? '↑' : '↓';
+    const dirColor = sd.isLong ? 'var(--long)' : 'var(--short)';
+    return `
+      <tr>
+        <td class="py-2 pr-3 font-medium" style="color:${dirColor}">${dirSymbol} ${sd.name}</td>
+        <td class="py-2 pr-3 mono text-emerald-400 text-right">${sd.pSiGivenUp.toFixed(4)}</td>
+        <td class="py-2 mono text-red-400 text-right">${sd.pSiGivenDown.toFixed(4)}</td>
+      </tr>`;
+  }).join('');
+
+  createStepEl(`
+    <div class="flex items-center gap-2 mb-3">
+      <span class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold mono">1</span>
+      <span class="font-bold text-sm">查表：各信号的条件概率</span>
+    </div>
+    <div class="text-xs text-slate-400 mb-3">
+      在${r.regime === 'ranging' ? '震荡' : '趋势'}行情下，上涨/下跌时出现各信号的概率：
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-xs text-slate-500 border-b" style="border-color:var(--border)">
+            <th class="py-2 pr-3 text-left">信号</th>
+            <th class="py-2 pr-3 text-right">P(s<sub>i</sub>|up)</th>
+            <th class="py-2 text-right">P(s<sub>i</sub>|down)</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+    <div class="mt-3 text-xs text-slate-500">
+      看多信号的 P(s<sub>i</sub>|up) = 历史胜率；看空信号的 P(s<sub>i</sub>|up) = 1 - 历史胜率。
+    </div>
+  `);
+  stepsContainer.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// 步骤2：似然比
+async function addStep2(r) {
+  const items = r.signalData.map(sd => {
+    const color = sd.ratio > 1 ? 'var(--short)' : 'var(--long)';
+    const arrow = sd.ratio > 1 ? '→ 偏空' : '→ 偏多';
+    return `
+      <div class="flex items-center justify-between py-1.5">
+        <span class="text-sm">${sd.name}</span>
+        <span class="mono text-sm font-semibold" style="color:${color}">
+          ${sd.ratio.toFixed(4)} <span class="text-xs font-normal">${arrow}</span>
+        </span>
+      </div>`;
+  }).join('');
+
+  createStepEl(`
+    <div class="flex items-center gap-2 mb-3">
+      <span class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold mono">2</span>
+      <span class="font-bold text-sm">计算似然比</span>
+    </div>
+    <div class="formula-box mb-3">
+      似然比 = <span class="hl-short">P(s<sub>i</sub>|down)</span> / <span class="hl-long">P(s<sub>i</sub>|up)</span>
+    </div>
+    <div class="space-y-0 divide-y" style="border-color:var(--border)">
+      ${items}
+    </div>
+    <div class="mt-3 text-xs text-slate-500">
+      似然比 &lt; 1 表示该信号支持上涨，&gt; 1 表示支持下跌。越偏离 1，信号越强。
+    </div>
+  `);
+  stepsContainer.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// 步骤3：乘积
+async function addStep3(r) {
+  const ratioStr = r.signalData.map(sd => sd.ratio.toFixed(4)).join(' × ');
+  const logStr = r.signalData.map(sd => sd.logRatio.toFixed(4)).join(' + ');
+
+  createStepEl(`
+    <div class="flex items-center gap-2 mb-3">
+      <span class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold mono">3</span>
+      <span class="font-bold text-sm">似然比乘积</span>
+    </div>
+    <div class="formula-box mb-3">
+      <div class="mb-2">∏ P(s<sub>i</sub>|down)/P(s<sub>i</sub>|up) = ${ratioStr}</div>
+      <div class="text-lg font-bold" style="color:var(--accent)">= ${r.productRatio.toFixed(6)}</div>
+    </div>
+    <div class="text-xs text-slate-400 mb-2">对数域计算（避免下溢）：</div>
+    <div class="formula-box" style="background:rgba(100,116,139,0.06);border-color:rgba(100,116,139,0.15)">
+      <div class="mb-1">Σ ln(P(s<sub>i</sub>|down)/P(s<sub>i</sub>|up)) = ${logStr}</div>
+      <div>= ${r.sumLogRatio.toFixed(6)}</div>
+    </div>
+    <div class="mt-3 text-xs text-slate-500">
+      乘积 ${r.productRatio < 1 ? '< 1，信号整体偏多' : '> 1，信号整体偏空'}。
+      对数域将乘法变加法，计算机更精确。
+    </div>
+  `);
+  stepsContainer.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// 步骤4：后验概率
+async function addStep4(r) {
+  const isUp = r.posteriorUp > 0.5;
+  const dirLabel = isUp ? '看多' : '看空';
+  const dirColor = isUp ? 'var(--long)' : 'var(--short)';
+
+  createStepEl(`
+    <div class="flex items-center gap-2 mb-3">
+      <span class="w-7 h-7 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-bold mono">4</span>
+      <span class="font-bold text-sm">计算后验概率</span>
+    </div>
+    <div class="formula-box mb-3">
+      <div class="mb-2">P(up|s<sub>1</sub>,...,s<sub>n</sub>) = 1 / (1 + (1-p)/p × ∏ 似然比)</div>
+      <div class="mb-2">= 1 / (1 + ${(1 - r.prior).toFixed(2)}/${r.prior.toFixed(2)} × ${r.productRatio.toFixed(6)})</div>
+      <div class="mb-2">= 1 / (1 + ${((1 - r.prior) / r.prior * r.productRatio).toFixed(6)})</div>
+      <div class="text-xl font-black" style="color:${dirColor}">
+        = ${fmtProb(r.posteriorUp)}
+      </div>
+    </div>
+    <div class="p-3 rounded-lg text-sm" style="background:${isUp ? 'var(--long-dim)' : 'var(--short-dim)'}">
+      <i class="fa-solid ${isUp ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'} mr-1" style="color:${dirColor}"></i>
+      综合判断：<strong style="color:${dirColor}">${dirLabel}</strong>
+      （上涨概率 ${fmtProb(r.posteriorUp)}，下跌概率 ${fmtProb(1 - r.posteriorUp)}）
+    </div>
+  `);
+  stepsContainer.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ========== 结果动画 ==========
+
+async function animateResult(r) {
+  const isUp = r.posteriorUp > 0.5;
+  const prob = r.posteriorUp;
+
+  // 方向图标
+  const dirIcon = document.getElementById('result-direction-icon');
+  dirIcon.style.background = isUp ? 'var(--long-dim)' : 'var(--short-dim)';
+  dirIcon.innerHTML = `<i class="fa-solid ${isUp ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}" style="color:${isUp ? 'var(--long)' : 'var(--short)'}"></i>`;
+
+  // 方向文字
+  const dirText = document.getElementById('result-direction-text');
+  dirText.textContent = isUp ? '看多信号' : '看空信号';
+  dirText.style.color = isUp ? 'var(--long)' : 'var(--short)';
+
+  // 概率文字
+  const probText = document.getElementById('result-prob-text');
+  probText.textContent = `P(up|signals) = ${fmtProb(prob)}`;
+
+  // 概率条
+  const bar = document.getElementById('result-bar');
+  bar.style.width = '0%';
+  bar.style.background = isUp
+    ? 'linear-gradient(90deg, rgba(16,185,129,0.3), #10b981)'
+    : 'linear-gradient(90deg, rgba(239,68,68,0.3), #ef4444)';
+  requestAnimationFrame(() => {
+    bar.style.width = `${prob * 100}%`;
+  });
+
+  // 仓位建议
+  const advice = document.getElementById('position-advice');
+  let adviceText, adviceColor;
+  if (prob > 0.75) {
+    adviceText = '高置信度——可考虑重仓跟进';
+    adviceColor = isUp ? 'var(--long)' : 'var(--short)';
+  } else if (prob > 0.6) {
+    adviceText = '中等置信度——标准仓位即可';
+    adviceColor = 'var(--accent)';
+  } else if (prob > 0.5) {
+    adviceText = '低置信度——建议轻仓试探';
+    adviceColor = 'var(--muted)';
+  } else {
+    adviceText = '低置信度——建议轻仓试探';
+    adviceColor = 'var(--muted)';
+  }
+  advice.innerHTML = `<i class="fa-solid fa-circle-info mr-1" style="color:${adviceColor}"></i> <span style="color:${adviceColor}">${adviceText}</span>`;
+
+  // 绘制仪表盘动画
+  await animateGauge(prob);
+}
+
+// ========== 仪表盘绘制 ==========
+
+function animateGauge(targetProb) {
+  return new Promise(resolve => {
+    const canvas = document.getElementById('gauge-canvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
+    const cx = W / 2;
+    const cy = H - 40;
+    const R = Math.min(W, H) * 0.42;
+
+    const startAngle = Math.PI;
+    const endAngle = 2 * Math.PI;
+    let currentProb = 0;
+    const startTime = performance.now();
+    const duration = 1200;
+
+    function draw(now) {
+      const elapsed = now - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      // easeOutExpo
+      const ease = t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+      currentProb = targetProb * ease;
+
+      ctx.clearRect(0, 0, W, H);
+
+      // 背景弧
+      ctx.beginPath();
+      ctx.arc(cx, cy, R, startAngle, endAngle);
+      ctx.lineWidth = 28;
+      ctx.strokeStyle = 'rgba(30,45,74,0.6)';
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // 渐变弧（已填充部分）
+      const fillAngle = startAngle + currentProb * Math.PI;
+      if (currentProb > 0.001) {
+        const grad = ctx.createLinearGradient(cx - R, cy, cx + R, cy);
+        grad.addColorStop(0, '#ef4444');
+        grad.addColorStop(0.35, '#f59e0b');
+        grad.addColorStop(0.5, '#fbbf24');
+        grad.addColorStop(0.65, '#84cc16');
+        grad.addColorStop(1, '#10b981');
+        ctx.beginPath();
+        ctx.arc(cx, cy, R, startAngle, fillAngle);
+        ctx.lineWidth = 28;
+        ctx.strokeStyle = grad;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+      }
+
+      // 刻度线
+      for (let i = 0; i <= 10; i++) {
+        const angle = startAngle + (i / 10) * Math.PI;
+        const inner = R - 20;
+        const outer = R + 16;
+        const x1 = cx + inner * Math.cos(angle);
+        const y1 = cy + inner * Math.sin(angle);
+        const x2 = cx + outer * Math.cos(angle);
+        const y2 = cy + outer * Math.sin(angle);
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.lineWidth = i % 5 === 0 ? 2 : 1;
+        ctx.strokeStyle = i % 5 === 0 ? 'rgba(226,232,240,0.4)' : 'rgba(226,232,240,0.15)';
+        ctx.stroke();
+
+        // 刻度数字
+        if (i % 5 === 0) {
+          const labelR = R + 32;
+          const lx = cx + labelR * Math.cos(angle);
+          const ly = cy + labelR * Math.sin(angle);
+          ctx.fillStyle = 'rgba(226,232,240,0.5)';
+          ctx.font = '500 20px "JetBrains Mono"';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(`${i * 10}`, lx, ly);
+        }
+      }
+
+      // 50% 标记线
+      const midAngle = startAngle + 0.5 * Math.PI;
+      ctx.beginPath();
+      ctx.moveTo(cx + (R - 24) * Math.cos(midAngle), cy + (R - 24) * Math.sin(midAngle));
+      ctx.lineTo(cx + (R + 12) * Math.cos(midAngle), cy + (R + 12) * Math.sin(midAngle));
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgba(245,158,11,0.5)';
+      ctx.setLineDash([4, 4]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 指针
+      const needleAngle = startAngle + currentProb * Math.PI;
+      const needleLen = R - 35;
+      const nx = cx + needleLen * Math.cos(needleAngle);
+      const ny = cy + needleLen * Math.sin(needleAngle);
+
+      // 指针阴影
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(nx, ny);
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+      ctx.stroke();
+
+      // 指针本体
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(nx, ny);
+      ctx.lineWidth = 3;
+      const needleColor = currentProb > 0.5 ? '#10b981' : '#ef4444';
+      ctx.strokeStyle = needleColor;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+
+      // 中心圆
+      ctx.beginPath();
+      ctx.arc(cx, cy, 8, 0, 2 * Math.PI);
+      ctx.fillStyle = '#1e293b';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(cx, cy, 5, 0, 2 * Math.PI);
+      ctx.fillStyle = needleColor;
+      ctx.fill();
+
+      // 中心数字
+      const displayProb = (currentProb * 100).toFixed(1);
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = '700 44px "JetBrains Mono"';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(`${displayProb}%`, cx, cy - 20);
+
+      // 标签
+      ctx.font = '400 18px "Noto Sans SC"';
+      ctx.fillStyle = 'rgba(226,232,240,0.4)';
+      ctx.textBaseline = 'top';
+      ctx.fillText('上涨概率', cx, cy - 8);
+
+      if (t < 1) {
+        requestAnimationFrame(draw);
+      } else {
+        resolve();
+      }
+    }
+
+    requestAnimationFrame(draw);
+  });
+}
+
+// ========== 事件绑定 ==========
+
+btnGenerate.addEventListener('click', generateSignals);
+btnFuse.addEventListener('click', runFusion);
+
+priorSlider.addEventListener('input', () => {
+  priorValue.textContent = priorSlider.value + '%';
+});
+
+// 初始化行情标签
+updateRegimeBadge();
+
+// ========== 背景粒子效果 ==========
+(function initParticles() {
+  const canvas = document.createElement('canvas');
+  canvas.style.cssText = 'position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.4';
+  document.body.prepend(canvas);
+  const ctx = canvas.getContext('2d');
+  let W, H;
+  const particles = [];
+  const COUNT = 40;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  for (let i = 0; i < COUNT; i++) {
+    particles.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      r: Math.random() * 1.5 + 0.5,
+      alpha: Math.random() * 0.5 + 0.1,
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0) p.x = W;
+      if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H;
+      if (p.y > H) p.y = 0;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(245,158,11,${p.alpha})`;
+      ctx.fill();
+    });
+
+    // 连线
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 150) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(245,158,11,${0.06 * (1 - dist / 150)})`;
+          ctx.lineWidth = 0.5;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+  animate();
+})();
+</script>
+</body>
+</html>
