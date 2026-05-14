@@ -1,0 +1,686 @@
+	<!DOCTYPE html>
+	<html lang="zh-CN">
+	<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>ADX 量化指标演示</title>
+	<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+	<script src="https://cdn.tailwindcss.com"></script>
+	<style>
+	:root{--bg:#0d1117;--card:#161b22;--card2:#1c2230;--border:#30363d;--fg:#e6edf3;--muted:#7d8590;--accent:#e8a027;--up:#0ecb81;--down:#f6465d;--plus:#0ecb81;--minus:#f6465d;--adx:#e8a027}
+	*{box-sizing:border-box;margin:0;padding:0}
+	body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--fg);overflow-x:hidden}
+	.mono{font-family:'JetBrains Mono',monospace}
+	::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+	.formula-box{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:16px 18px;margin-bottom:10px;transition:border-color .3s,box-shadow .3s}
+	.formula-box:hover{border-color:var(--accent);box-shadow:0 0 16px rgba(232,160,39,.08)}
+	.formula-box .tag{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+	.formula-math{font-family:'JetBrains Mono',monospace;font-size:13px;color:#8b949e;line-height:2}
+	.formula-math .hl{color:var(--accent);font-weight:700}
+	.formula-math .hl-g{color:var(--plus);font-weight:700}
+	.formula-math .hl-r{color:var(--minus);font-weight:700}
+	.val-line{font-family:'JetBrains Mono',monospace;font-size:12.5px;color:var(--muted);margin-top:4px;line-height:1.7}
+	.val-line .v{color:var(--fg);font-weight:500}
+	.val-line .v-a{color:var(--accent);font-weight:700}
+	.val-line .v-g{color:var(--plus);font-weight:700}
+	.val-line .v-r{color:var(--minus);font-weight:700}
+	canvas{display:block;cursor:crosshair}
+	.info-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:4px;font-size:12px;font-weight:600;font-family:'JetBrains Mono',monospace}
+	.tooltip-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 16px;pointer-events:none;box-shadow:0 8px 32px rgba(0,0,0,.5);min-width:180px;transition:opacity .15s}
+	@keyframes pulse-glow{0%,100%{box-shadow:0 0 4px var(--accent)}50%{box-shadow:0 0 12px var(--accent)}}
+	.live-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse-glow 2s ease-in-out infinite}
+	.section-title{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+	.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+	@media(max-width:1024px){.main-grid{flex-direction:column!important}.formula-panel{max-height:400px;overflow-y:auto}}
+	</style>
+	</head>
+	<body class="min-h-screen">
+	<!-- 顶部栏 -->
+	<header class="px-5 py-3 flex items-center justify-between" style="border-bottom:1px solid var(--border);background:var(--card)">
+	  <div class="flex items-center gap-3">
+	    <div class="w-8 h-8 rounded-md flex items-center justify-center font-black text-sm" style="background:var(--accent);color:#000">A</div>
+	    <div>
+	      <div class="text-base font-bold tracking-wide">ADX 平均趋向指数</div>
+	      <div class="text-xs" style="color:var(--muted)">Average Directional Index — 量化指标交互演示</div>
+	    </div>
+	  </div>
+	  <div class="flex items-center gap-3">
+	    <div class="live-dot"></div>
+	    <span class="mono text-xs" style="color:var(--muted)" id="dataInfo">生成中...</span>
+	  </div>
+	</header>
+	<!-- 参数栏 -->
+	<div class="px-5 py-2 flex flex-wrap items-center gap-4" style="border-bottom:1px solid var(--border);background:rgba(22,27,34,.7)">
+	  <div class="flex items-center gap-2">
+	    <label class="text-xs font-medium" style="color:var(--muted)">周期</label>
+	    <select id="periodSelect" class="mono text-xs px-2 py-1 rounded" style="background:var(--card2);border:1px solid var(--border);color:var(--fg);outline:none">
+	      <option value="7">7</option>
+	      <option value="14" selected>14</option>
+	      <option value="21">21</option>
+	      <option value="28">28</option>
+	    </select>
+	  </div>
+	  <div class="flex items-center gap-2">
+	    <label class="text-xs font-medium" style="color:var(--muted)">K线数</label>
+	    <select id="countSelect" class="mono text-xs px-2 py-1 rounded" style="background:var(--card2);border:1px solid var(--border);color:var(--fg);outline:none">
+	      <option value="80">80</option>
+	      <option value="120" selected>120</option>
+	      <option value="200">200</option>
+	    </select>
+	  </div>
+	  <button id="regenBtn" class="text-xs font-medium px-3 py-1 rounded transition-colors" style="background:var(--accent);color:#000" onmouseover="this.style.opacity=.85" onmouseout="this.style.opacity=1">重新生成</button>
+	  <div class="flex-1"></div>
+	  <div class="flex items-center gap-3 text-xs mono" style="color:var(--muted)">
+	    <span style="color:var(--plus)">● +DI</span>
+	    <span style="color:var(--minus)">● -DI</span>
+	    <span style="color:var(--accent)">● ADX</span>
+	  </div>
+	</div>
+	<!-- 主体 -->
+	<div class="main-grid flex" style="height:calc(100vh - 90px)">
+	  <!-- 左侧图表 -->
+	  <div class="flex-1 flex flex-col min-w-0" id="chartContainer">
+	    <div id="klineWrap" style="flex:3;min-height:0;position:relative;border-bottom:1px solid var(--border)">
+	      <canvas id="kCanvas"></canvas>
+	      <div id="kTooltip" class="tooltip-card" style="position:absolute;display:none;z-index:10"></div>
+	    </div>
+	    <div id="adxWrap" style="flex:2;min-height:0;position:relative">
+	      <canvas id="adxCanvas"></canvas>
+	      <div id="adxTooltip" class="tooltip-card" style="position:absolute;display:none;z-index:10"></div>
+	    </div>
+	  </div>
+	  <!-- 右侧公式面板 -->
+	  <div class="formula-panel" style="width:380px;border-left:1px solid var(--border);overflow-y:auto;padding:16px;background:var(--card)">
+	    <div class="section-title">计算公式</div>
+	    <div class="formula-box" id="fDM">
+	      <div class="tag" style="color:var(--accent)"><span class="live-dot" style="width:5px;height:5px"></span>Step 1 — 方向移动 DM</div>
+	      <div class="formula-math">
+	        +DM = max( High<sub>t</sub> − High<sub>t−1</sub>, 0 )<br>
+	        −DM = max( Low<sub>t−1</sub> − Low<sub>t</sub>, 0 )<br>
+	        <span style="color:#6e7681">若 +DM > −DM → −DM = 0</span><br>
+	        <span style="color:#6e7681">若 −DM > +DM → +DM = 0</span>
+	      </div>
+	      <div class="val-line" id="vDM"></div>
+	    </div>
+	    <div class="formula-box" id="fTR">
+	      <div class="tag" style="color:var(--accent)"><span class="live-dot" style="width:5px;height:5px"></span>Step 2 — 真实波幅 TR</div>
+	      <div class="formula-math">
+	        TR = max(<br>
+	        &nbsp;&nbsp;High<sub>t</sub> − Low<sub>t</sub>,<br>
+	        &nbsp;&nbsp;|High<sub>t</sub> − Close<sub>t−1</sub>|,<br>
+	        &nbsp;&nbsp;|Low<sub>t</sub> − Close<sub>t−1</sub>|<br>
+	        )
+	      </div>
+	      <div class="val-line" id="vTR"></div>
+	    </div>
+	    <div class="formula-box" id="fSmooth">
+	      <div class="tag" style="color:var(--accent)"><span class="live-dot" style="width:5px;height:5px"></span>Step 3 — Wilder 平滑</div>
+	      <div class="formula-math">
+	        首次 = Σ(前 <span class="hl">N</span> 期) / <span class="hl">N</span><br>
+	        之后 = Prev − Prev/<span class="hl">N</span> + 当期值<br>
+	        <span style="color:#6e7681">对 +DM、−DM、TR 分别平滑</span>
+	      </div>
+	      <div class="val-line" id="vSmooth"></div>
+	    </div>
+	    <div class="formula-box" id="fDI">
+	      <div class="tag" style="color:var(--plus)"><span class="live-dot" style="width:5px;height:5px;background:var(--plus)"></span>Step 4 — 方向指标 DI</div>
+	      <div class="formula-math">
+	        <span class="hl-g">+DI</span> = 100 × Smoothed(+DM) / Smoothed(TR)<br>
+	        <span class="hl-r">−DI</span> = 100 × Smoothed(−DM) / Smoothed(TR)
+	      </div>
+	      <div class="val-line" id="vDI"></div>
+	    </div>
+	    <div class="formula-box" id="fDX">
+	      <div class="tag" style="color:var(--fg)"><span class="live-dot" style="width:5px;height:5px;background:var(--fg)"></span>Step 5 — 趋向指数 DX</div>
+	      <div class="formula-math">
+	        DX = 100 × |<span class="hl-g">+DI</span> − <span class="hl-r">−DI</span>| / (<span class="hl-g">+DI</span> + <span class="hl-r">−DI</span>)
+	      </div>
+	      <div class="val-line" id="vDX"></div>
+	    </div>
+	    <div class="formula-box" id="fADX">
+	      <div class="tag" style="color:var(--accent)"><span class="live-dot" style="width:5px;height:5px"></span>Step 6 — 平均趋向指数 ADX</div>
+	      <div class="formula-math">
+	        首次 ADX = Σ(前 <span class="hl">N</span> 期 DX) / <span class="hl">N</span><br>
+	        之后 ADX = (Prev×(<span class="hl">N</span>−1) + DX) / <span class="hl">N</span>
+	      </div>
+	      <div class="val-line" id="vADX"></div>
+	    </div>
+	    <div style="margin-top:16px;padding:12px 14px;border-radius:8px;background:rgba(232,160,39,.06);border:1px solid rgba(232,160,39,.15)">
+	      <div class="text-xs font-bold mb-2" style="color:var(--accent)">读数指南</div>
+	      <div class="text-xs leading-relaxed" style="color:var(--muted)">
+	        <b style="color:var(--fg)">ADX &gt; 25</b>：趋势强劲（上升或下降）<br>
+	        <b style="color:var(--fg)">ADX &lt; 20</b>：市场盘整，无明确趋势<br>
+	        <b style="color:var(--plus)">+DI &gt; −DI</b>：多头方向占优<br>
+	        <b style="color:var(--minus)">−DI &gt; +DI</b>：空头方向占优<br>
+	        <b style="color:var(--accent)">ADX 上升</b>：趋势正在增强
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	<script>
+	/* ==============================
+	   数据生成与ADX计算
+	   ============================== */
+	let klineData = [];
+	let adxResult = [];
+	let period = 14;
+	let dataCount = 120;
+	let hoverIndex = -1;
+	let dpr = 1;
+	// 生成模拟K线数据
+	function generateKline(count) {
+	    const data = [];
+	    let price = 50 + Math.random() * 50;
+	    const base = new Date(2024, 0, 1);
+	    for (let i = 0; i < count + 50; i++) { // 多生成一些以供预热
+	        const drift = (Math.random() - 0.48) * 1.5;
+	        const vol = 1 + Math.random() * 3;
+	        const open = price;
+	        const close = open + drift + (Math.random() - 0.5) * vol;
+	        const high = Math.max(open, close) + Math.random() * vol * 0.6;
+	        const low = Math.min(open, close) - Math.random() * vol * 0.6;
+	        const d = new Date(base);
+	        d.setDate(d.getDate() + i);
+	        data.push({
+	            date: d,
+	            open: +open.toFixed(2),
+	            high: +high.toFixed(2),
+	            low: +low.toFixed(2),
+	            close: +close.toFixed(2)
+	        });
+	        price = close;
+	    }
+	    return data;
+	}
+	// ADX计算（Wilder平滑法）
+	function computeADX(data, n) {
+	    const len = data.length;
+	    // Step 1: +DM, -DM, TR
+	    const plusDMraw = new Array(len).fill(0);
+	    const minusDMraw = new Array(len).fill(0);
+	    const TRraw = new Array(len).fill(0);
+	    for (let i = 1; i < len; i++) {
+	        const upMove = data[i].high - data[i - 1].high;
+	        const downMove = data[i - 1].low - data[i].low;
+	        plusDMraw[i] = (upMove > downMove && upMove > 0) ? upMove : 0;
+	        minusDMraw[i] = (downMove > upMove && downMove > 0) ? downMove : 0;
+	        TRraw[i] = Math.max(
+	            data[i].high - data[i].low,
+	            Math.abs(data[i].high - data[i - 1].close),
+	            Math.abs(data[i].low - data[i - 1].close)
+	        );
+	    }
+	    // Step 3: Wilder平滑
+	    const smoothPDM = new Array(len).fill(0);
+	    const smoothMDM = new Array(len).fill(0);
+	    const smoothTR = new Array(len).fill(0);
+	    // 首次：前N期求和
+	    let sumP = 0, sumM = 0, sumT = 0;
+	    for (let i = 1; i <= n; i++) {
+	        sumP += plusDMraw[i]; sumM += minusDMraw[i]; sumT += TRraw[i];
+	    }
+	    smoothPDM[n] = sumP / n;
+	    smoothMDM[n] = sumM / n;
+	    smoothTR[n] = sumT / n;
+	    for (let i = n + 1; i < len; i++) {
+	        smoothPDM[i] = smoothPDM[i - 1] - smoothPDM[i - 1] / n + plusDMraw[i];
+	        smoothMDM[i] = smoothMDM[i - 1] - smoothMDM[i - 1] / n + minusDMraw[i];
+	        smoothTR[i] = smoothTR[i - 1] - smoothTR[i - 1] / n + TRraw[i];
+	    }
+	    // Step 4: +DI, -DI
+	    const plusDI = new Array(len).fill(0);
+	    const minusDI = new Array(len).fill(0);
+	    for (let i = n; i < len; i++) {
+	        plusDI[i] = smoothTR[i] > 0 ? (100 * smoothPDM[i] / smoothTR[i]) : 0;
+	        minusDI[i] = smoothTR[i] > 0 ? (100 * smoothMDM[i] / smoothTR[i]) : 0;
+	    }
+	    // Step 5: DX
+	    const DX = new Array(len).fill(0);
+	    for (let i = n; i < len; i++) {
+	        const sum = plusDI[i] + minusDI[i];
+	        DX[i] = sum > 0 ? (100 * Math.abs(plusDI[i] - minusDI[i]) / sum) : 0;
+	    }
+	    // Step 6: ADX
+	    const ADX = new Array(len).fill(0);
+	    let dxSum = 0;
+	    for (let i = n; i < n + n; i++) {
+	        dxSum += DX[i];
+	    }
+	    ADX[2 * n - 1] = dxSum / n;
+	    for (let i = 2 * n; i < len; i++) {
+	        ADX[i] = (ADX[i - 1] * (n - 1) + DX[i]) / n;
+	    }
+	    // 返回完整结果
+	    return data.map((d, i) => ({
+	        ...d,
+	        plusDMraw: plusDMraw[i],
+	        minusDMraw: minusDMraw[i],
+	        TRraw: TRraw[i],
+	        smoothPDM: smoothPDM[i],
+	        smoothMDM: smoothMDM[i],
+	        smoothTR: smoothTR[i],
+	        plusDI: plusDI[i],
+	        minusDI: minusDI[i],
+	        dx: DX[i],
+	        adx: ADX[i],
+	        valid: i >= 2 * n - 1 // ADX从此索引开始有效
+	    }));
+	}
+	/* ==============================
+	   图表绘制
+	   ============================== */
+	const kCanvas = document.getElementById('kCanvas');
+	const adxCanvas = document.getElementById('adxCanvas');
+	const kCtx = kCanvas.getContext('2d');
+	const adxCtx = adxCanvas.getContext('2d');
+	const kTooltip = document.getElementById('kTooltip');
+	const adxTooltip = document.getElementById('adxTooltip');
+	// 图表布局参数
+	const pad = { top: 24, right: 60, bottom: 28, left: 8 };
+	function resizeCanvases() {
+	    dpr = window.devicePixelRatio || 1;
+	    const kw = document.getElementById('klineWrap');
+	    const aw = document.getElementById('adxWrap');
+	    kCanvas.width = kw.clientWidth * dpr;
+	    kCanvas.height = kw.clientHeight * dpr;
+	    kCanvas.style.width = kw.clientWidth + 'px';
+	    kCanvas.style.height = kw.clientHeight + 'px';
+	    adxCanvas.width = aw.clientWidth * dpr;
+	    adxCanvas.height = aw.clientHeight * dpr;
+	    adxCanvas.style.width = aw.clientWidth + 'px';
+	    adxCanvas.style.height = aw.clientHeight + 'px';
+	}
+	function getChartDims(canvas) {
+	    return {
+	        w: canvas.width / dpr,
+	        h: canvas.height / dpr,
+	        plotX: pad.left,
+	        plotY: pad.top,
+	        plotW: canvas.width / dpr - pad.left - pad.right,
+	        plotH: canvas.height / dpr - pad.top - pad.bottom
+	    };
+	}
+	// 获取可视数据范围（去掉预热部分）
+	function getVisibleData() {
+	    const startIdx = 50; // 跳过前50根预热K线
+	    return adxResult.slice(startIdx);
+	}
+	function drawAll() {
+	    drawKline();
+	    drawADXChart();
+	    updateFormulas(hoverIndex);
+	}
+	function drawKline() {
+	    const ctx = kCtx;
+	    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+	    const dim = getChartDims(kCanvas);
+	    ctx.clearRect(0, 0, dim.w, dim.h);
+	    const data = getVisibleData();
+	    if (data.length === 0) return;
+	    // 计算价格范围
+	    let pMin = Infinity, pMax = -Infinity;
+	    data.forEach(d => { pMin = Math.min(pMin, d.low); pMax = Math.max(pMax, d.high); });
+	    const pPad = (pMax - pMin) * 0.08;
+	    pMin -= pPad; pMax += pPad;
+	    const candleW = dim.plotW / data.length;
+	    const bodyW = Math.max(candleW * 0.65, 2);
+	    // 价格→Y
+	    const yOf = p => dim.plotY + dim.plotH * (1 - (p - pMin) / (pMax - pMin));
+	    // 网格线
+	    ctx.strokeStyle = 'rgba(48,54,61,.5)';
+	    ctx.lineWidth = 0.5;
+	    const gridLines = 5;
+	    for (let i = 0; i <= gridLines; i++) {
+	        const p = pMin + (pMax - pMin) * i / gridLines;
+	        const y = yOf(p);
+	        ctx.beginPath(); ctx.moveTo(dim.plotX, y); ctx.lineTo(dim.plotX + dim.plotW, y); ctx.stroke();
+	        ctx.fillStyle = '#7d8590';
+	        ctx.font = '10px JetBrains Mono';
+	        ctx.textAlign = 'left';
+	        ctx.fillText(p.toFixed(1), dim.plotX + dim.plotW + 4, y + 3);
+	    }
+	    // K线
+	    data.forEach((d, i) => {
+	        const x = dim.plotX + (i + 0.5) * candleW;
+	        const isUp = d.close >= d.open;
+	        const color = isUp ? '#0ecb81' : '#f6465d';
+	        // 上下影线
+	        ctx.strokeStyle = color;
+	        ctx.lineWidth = 1;
+	        ctx.beginPath();
+	        ctx.moveTo(x, yOf(d.high));
+	        ctx.lineTo(x, yOf(d.low));
+	        ctx.stroke();
+	        // 实体
+	        const yTop = yOf(Math.max(d.open, d.close));
+	        const yBot = yOf(Math.min(d.open, d.close));
+	        const bh = Math.max(yBot - yTop, 1);
+	        if (isUp) {
+	            ctx.strokeStyle = color;
+	            ctx.lineWidth = 1;
+	            ctx.strokeRect(x - bodyW / 2, yTop, bodyW, bh);
+	        } else {
+	            ctx.fillStyle = color;
+	            ctx.fillRect(x - bodyW / 2, yTop, bodyW, bh);
+	        }
+	    });
+	    // 悬停高亮
+	    if (hoverIndex >= 0 && hoverIndex < data.length) {
+	        const d = data[hoverIndex];
+	        const x = dim.plotX + (hoverIndex + 0.5) * candleW;
+	        // 竖线
+	        ctx.strokeStyle = 'rgba(232,160,39,.35)';
+	        ctx.lineWidth = 1;
+	        ctx.setLineDash([4, 3]);
+	        ctx.beginPath(); ctx.moveTo(x, dim.plotY); ctx.lineTo(x, dim.plotY + dim.plotH); ctx.stroke();
+	        ctx.setLineDash([]);
+	        // 横线（收盘价）
+	        const yc = yOf(d.close);
+	        ctx.strokeStyle = 'rgba(232,160,39,.25)';
+	        ctx.setLineDash([4, 3]);
+	        ctx.beginPath(); ctx.moveTo(dim.plotX, yc); ctx.lineTo(dim.plotX + dim.plotW, yc); ctx.stroke();
+	        ctx.setLineDash([]);
+	        // 价格标签
+	        ctx.fillStyle = '#e8a027';
+	        ctx.fillRect(dim.plotX + dim.plotW, yc - 9, 52, 18);
+	        ctx.fillStyle = '#000';
+	        ctx.font = 'bold 10px JetBrains Mono';
+	        ctx.textAlign = 'left';
+	        ctx.fillText(d.close.toFixed(2), dim.plotX + dim.plotW + 3, yc + 4);
+	    }
+	    // 标题
+	    ctx.fillStyle = '#e6edf3';
+	    ctx.font = 'bold 12px Noto Sans SC';
+	    ctx.textAlign = 'left';
+	    ctx.fillText('K线走势', dim.plotX + 4, 16);
+	}
+	function drawADXChart() {
+	    const ctx = adxCtx;
+	    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+	    const dim = getChartDims(adxCanvas);
+	    ctx.clearRect(0, 0, dim.w, dim.h);
+	    const data = getVisibleData();
+	    if (data.length === 0) return;
+	    const candleW = dim.plotW / data.length;
+	    const yMax = 70; // DI和ADX一般0~100，但70足够
+	    const yOf = v => dim.plotY + dim.plotH * (1 - v / yMax);
+	    // 网格
+	    ctx.strokeStyle = 'rgba(48,54,61,.5)';
+	    ctx.lineWidth = 0.5;
+	    const gridVals = [0, 20, 25, 40, 60];
+	    gridVals.forEach(v => {
+	        const y = yOf(v);
+	        if (y < dim.plotY || y > dim.plotY + dim.plotH) return;
+	        ctx.beginPath(); ctx.moveTo(dim.plotX, y); ctx.lineTo(dim.plotX + dim.plotW, y); ctx.stroke();
+	        ctx.fillStyle = '#7d8590';
+	        ctx.font = '10px JetBrains Mono';
+	        ctx.textAlign = 'left';
+	        ctx.fillText(v.toString(), dim.plotX + dim.plotW + 4, y + 3);
+	    });
+	    // ADX=25阈值线
+	    const y25 = yOf(25);
+	    ctx.strokeStyle = 'rgba(232,160,39,.3)';
+	    ctx.lineWidth = 1;
+	    ctx.setLineDash([6, 4]);
+	    ctx.beginPath(); ctx.moveTo(dim.plotX, y25); ctx.lineTo(dim.plotX + dim.plotW, y25); ctx.stroke();
+	    ctx.setLineDash([]);
+	    ctx.fillStyle = 'rgba(232,160,39,.5)';
+	    ctx.font = '9px JetBrains Mono';
+	    ctx.fillText('趋势阈值 25', dim.plotX + dim.plotW + 4, y25 + 3);
+	    // +DI / -DI 填充区域
+	    ctx.beginPath();
+	    let started = false;
+	    data.forEach((d, i) => {
+	        if (d.plusDI <= 0 && d.minusDI <= 0) return;
+	        const x = dim.plotX + (i + 0.5) * candleW;
+	        if (!started) { ctx.moveTo(x, yOf(d.plusDI)); started = true; }
+	        else ctx.lineTo(x, yOf(d.plusDI));
+	    });
+	    data.slice().reverse().forEach((d, ri) => {
+	        const i = data.length - 1 - ri;
+	        if (d.plusDI <= 0 && d.minusDI <= 0) return;
+	        const x = dim.plotX + (i + 0.5) * candleW;
+	        ctx.lineTo(x, yOf(d.minusDI));
+	    });
+	    ctx.closePath();
+	    ctx.fillStyle = 'rgba(232,160,39,.04)';
+	    ctx.fill();
+	    // 绘制线条的辅助函数
+	    function drawLine(key, color, width) {
+	        ctx.strokeStyle = color;
+	        ctx.lineWidth = width;
+	        ctx.lineJoin = 'round';
+	        ctx.beginPath();
+	        let s = false;
+	        data.forEach((d, i) => {
+	            const v = d[key];
+	            if (v <= 0) return;
+	            const x = dim.plotX + (i + 0.5) * candleW;
+	            const y = yOf(v);
+	            if (!s) { ctx.moveTo(x, y); s = true; }
+	            else ctx.lineTo(x, y);
+	        });
+	        ctx.stroke();
+	    }
+	    drawLine('plusDI', '#0ecb81', 1.5);
+	    drawLine('minusDI', '#f6465d', 1.5);
+	    drawLine('adx', '#e8a027', 2.2);
+	    // 悬停高亮
+	    if (hoverIndex >= 0 && hoverIndex < data.length) {
+	        const d = data[hoverIndex];
+	        const x = dim.plotX + (hoverIndex + 0.5) * candleW;
+	        // 竖线
+	        ctx.strokeStyle = 'rgba(232,160,39,.35)';
+	        ctx.lineWidth = 1;
+	        ctx.setLineDash([4, 3]);
+	        ctx.beginPath(); ctx.moveTo(x, dim.plotY); ctx.lineTo(x, dim.plotY + dim.plotH); ctx.stroke();
+	        ctx.setLineDash([]);
+	        // 数据点
+	        [{ k: 'plusDI', c: '#0ecb81' }, { k: 'minusDI', c: '#f6465d' }, { k: 'adx', c: '#e8a027' }].forEach(item => {
+	            const v = d[item.k];
+	            if (v <= 0) return;
+	            const y = yOf(v);
+	            ctx.beginPath();
+	            ctx.arc(x, y, 4, 0, Math.PI * 2);
+	            ctx.fillStyle = item.c;
+	            ctx.fill();
+	            ctx.strokeStyle = '#0d1117';
+	            ctx.lineWidth = 1.5;
+	            ctx.stroke();
+	        });
+	        // 右侧数值标签
+	        [{ k: 'plusDI', c: '#0ecb81', label: '+DI' }, { k: 'minusDI', c: '#f6465d', label: '-DI' }, { k: 'adx', c: '#e8a027', label: 'ADX' }].forEach(item => {
+	            const v = d[item.k];
+	            if (v <= 0) return;
+	            const y = yOf(v);
+	            ctx.fillStyle = item.c;
+	            ctx.fillRect(dim.plotX + dim.plotW, y - 8, 52, 16);
+	            ctx.fillStyle = '#000';
+	            ctx.font = 'bold 9px JetBrains Mono';
+	            ctx.textAlign = 'left';
+	            ctx.fillText(item.label + ' ' + v.toFixed(1), dim.plotX + dim.plotW + 2, y + 3);
+	        });
+	    }
+	    // 标题
+	    ctx.fillStyle = '#e6edf3';
+	    ctx.font = 'bold 12px Noto Sans SC';
+	    ctx.textAlign = 'left';
+	    ctx.fillText('ADX 指标', dim.plotX + 4, 16);
+	    if (data.length > 0) {
+	        const lastValid = [...data].reverse().find(d => d.adx > 0);
+	        if (lastValid) {
+	            ctx.fillStyle = '#7d8590';
+	            ctx.font = '10px JetBrains Mono';
+	            ctx.fillText('周期=' + period, dim.plotX + 80, 16);
+	        }
+	    }
+	}
+	/* ==============================
+	   公式面板更新
+	   ============================== */
+	function updateFormulas(idx) {
+	    const data = getVisibleData();
+	    const setVal = (id, html) => { document.getElementById(id).innerHTML = html; };
+	    if (idx < 0 || idx >= data.length) {
+	        ['vDM','vTR','vSmooth','vDI','vDX','vADX'].forEach(id => setVal(id, '<span style="color:#6e7681;font-style:italic">将鼠标移至图表查看计算详情</span>'));
+	        return;
+	    }
+	    const d = data[idx];
+	    const dt = d.date;
+	    const dateStr = dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0');
+	    // Step 1: DM
+	    setVal('vDM', `
+	        日期: <span class="v">${dateStr}</span> &nbsp;|&nbsp;
+	        High<sub>t−1</sub>=<span class="v">${(adxResult[50+idx-1]?.high||0).toFixed(2)}</span>
+	        High<sub>t</sub>=<span class="v">${d.high.toFixed(2)}</span>
+	        Low<sub>t−1</sub>=<span class="v">${(adxResult[50+idx-1]?.low||0).toFixed(2)}</span>
+	        Low<sub>t</sub>=<span class="v">${d.low.toFixed(2)}</span><br>
+	        ↑Move=<span class="v-g">${(d.high - (adxResult[50+idx-1]?.high||0)).toFixed(2)}</span>
+	        ↓Move=<span class="v-r">${((adxResult[50+idx-1]?.low||0) - d.low).toFixed(2)}</span>
+	        → +DM=<span class="v-g">${d.plusDMraw.toFixed(2)}</span>
+	        −DM=<span class="v-r">${d.minusDMraw.toFixed(2)}</span>
+	    `);
+	    // Step 2: TR
+	    const prevClose = (adxResult[50+idx-1]?.close||0);
+	    setVal('vTR', `
+	        H−L = <span class="v">${(d.high - d.low).toFixed(2)}</span> &nbsp;|&nbsp;
+	        |H−C<sub>prev</sub>| = <span class="v">${Math.abs(d.high - prevClose).toFixed(2)}</span> &nbsp;|&nbsp;
+	        |L−C<sub>prev</sub>| = <span class="v">${Math.abs(d.low - prevClose).toFixed(2)}</span><br>
+	        → TR = <span class="v-a">${d.TRraw.toFixed(2)}</span>
+	    `);
+	    // Step 3: Smoothed
+	    setVal('vSmooth', `
+	        Smoothed +DM = <span class="v-g">${d.smoothPDM.toFixed(2)}</span> &nbsp;|&nbsp;
+	        Smoothed −DM = <span class="v-r">${d.smoothMDM.toFixed(2)}</span> &nbsp;|&nbsp;
+	        Smoothed TR = <span class="v-a">${d.smoothTR.toFixed(2)}</span>
+	    `);
+	    // Step 4: DI
+	    const pdiStr = d.plusDI > 0 ? d.plusDI.toFixed(2) : '—';
+	    const mdiStr = d.minusDI > 0 ? d.minusDI.toFixed(2) : '—';
+	    setVal('vDI', `
+	        +DI = 100 × ${d.smoothPDM.toFixed(2)} / ${d.smoothTR.toFixed(2)} = <span class="v-g">${pdiStr}</span><br>
+	        −DI = 100 × ${d.smoothMDM.toFixed(2)} / ${d.smoothTR.toFixed(2)} = <span class="v-r">${mdiStr}</span>
+	    `);
+	    // Step 5: DX
+	    const dxStr = d.dx > 0 ? d.dx.toFixed(2) : '—';
+	    setVal('vDX', `
+	        DX = 100 × |${pdiStr} − ${mdiStr}| / (${pdiStr} + ${mdiStr}) = <span class="v-a">${dxStr}</span>
+	    `);
+	    // Step 6: ADX
+	    const adxStr = d.adx > 0 ? d.adx.toFixed(2) : '—';
+	    const validStr = d.valid ? '✓ 有效' : '✗ 预热中';
+	    const validColor = d.valid ? '#0ecb81' : '#f6465d';
+	    setVal('vADX', `
+	        ADX = <span class="v-a">${adxStr}</span>
+	        &nbsp; <span style="color:${validColor};font-size:11px">${validStr}</span>
+	        ${d.adx > 25 ? '<span style="color:#0ecb81;font-size:11px"> ● 趋势强劲</span>' : d.adx > 20 ? '<span style="color:#e8a027;font-size:11px"> ● 趋势形成中</span>' : '<span style="color:#7d8590;font-size:11px"> ● 盘整区间</span>'}
+	    `);
+	}
+	/* ==============================
+	   鼠标交互
+	   ============================== */
+	function getHoverIndex(e, canvas) {
+	    const rect = canvas.getBoundingClientRect();
+	    const mx = e.clientX - rect.left;
+	    const dim = getChartDims(canvas);
+	    const data = getVisibleData();
+	    const candleW = dim.plotW / data.length;
+	    const idx = Math.floor((mx - dim.plotX) / candleW);
+	    return (idx >= 0 && idx < data.length) ? idx : -1;
+	}
+	function showKTooltip(e, idx) {
+	    const data = getVisibleData();
+	    if (idx < 0 || idx >= data.length) { kTooltip.style.display = 'none'; return; }
+	    const d = data[idx];
+	    const isUp = d.close >= d.open;
+	    const dt = d.date;
+	    const dateStr = dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0');
+	    kTooltip.innerHTML = `
+	        <div class="mono" style="font-size:11px;color:var(--muted);margin-bottom:4px">${dateStr}</div>
+	        <div style="display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:12px" class="mono">
+	            <span style="color:var(--muted)">开盘</span><span>${d.open.toFixed(2)}</span>
+	            <span style="color:var(--muted)">最高</span><span style="color:${isUp?'var(--plus)':'var(--minus)'}">${d.high.toFixed(2)}</span>
+	            <span style="color:var(--muted)">最低</span><span style="color:${isUp?'var(--plus)':'var(--minus)'}">${d.low.toFixed(2)}</span>
+	            <span style="color:var(--muted)">收盘</span><span style="color:${isUp?'var(--plus)':'var(--minus)'};font-weight:700">${d.close.toFixed(2)}</span>
+	            <span style="color:var(--muted)">涨跌</span><span style="color:${isUp?'var(--plus)':'var(--minus)'}">${isUp?'+':''}${(d.close-d.open).toFixed(2)}</span>
+	        </div>
+	    `;
+	    kTooltip.style.display = 'block';
+	    const rect = kCanvas.getBoundingClientRect();
+	    let tx = e.clientX - rect.left + 16;
+	    let ty = e.clientY - rect.top - 10;
+	    if (tx + 180 > rect.width) tx = e.clientX - rect.left - 190;
+	    if (ty < 0) ty = 10;
+	    kTooltip.style.left = tx + 'px';
+	    kTooltip.style.top = ty + 'px';
+	}
+	function showAdxTooltip(e, idx) {
+	    const data = getVisibleData();
+	    if (idx < 0 || idx >= data.length || data[idx].plusDI <= 0) { adxTooltip.style.display = 'none'; return; }
+	    const d = data[idx];
+	    adxTooltip.innerHTML = `
+	        <div class="mono" style="font-size:11px;color:var(--muted);margin-bottom:6px">ADX 指标值</div>
+	        <div style="display:flex;flex-direction:column;gap:3px;font-size:12px" class="mono">
+	            <div><span style="color:var(--plus)">+DI</span> = <b>${d.plusDI.toFixed(2)}</b></div>
+	            <div><span style="color:var(--minus)">−DI</span> = <b>${d.minusDI.toFixed(2)}</b></div>
+	            <div style="border-top:1px solid var(--border);padding-top:3px;margin-top:2px"><span style="color:var(--fg)">DX</span> = <b>${d.dx.toFixed(2)}</b></div>
+	            <div><span style="color:var(--accent)">ADX</span> = <b style="font-size:14px">${d.adx > 0 ? d.adx.toFixed(2) : '—'}</b></div>
+	        </div>
+	    `;
+	    adxTooltip.style.display = 'block';
+	    const rect = adxCanvas.getBoundingClientRect();
+	    let tx = e.clientX - rect.left + 16;
+	    let ty = e.clientY - rect.top - 10;
+	    if (tx + 180 > rect.width) tx = e.clientX - rect.left - 190;
+	    if (ty < 0) ty = 10;
+	    adxTooltip.style.left = tx + 'px';
+	    adxTooltip.style.top = ty + 'px';
+	}
+	// 绑定事件
+	kCanvas.addEventListener('mousemove', e => {
+	    hoverIndex = getHoverIndex(e, kCanvas);
+	    drawAll();
+	    showKTooltip(e, hoverIndex);
+	    if (hoverIndex >= 0) showAdxTooltip(e, hoverIndex);
+	    else adxTooltip.style.display = 'none';
+	});
+	kCanvas.addEventListener('mouseleave', () => {
+	    hoverIndex = -1; drawAll();
+	    kTooltip.style.display = 'none';
+	    adxTooltip.style.display = 'none';
+	});
+	adxCanvas.addEventListener('mousemove', e => {
+	    hoverIndex = getHoverIndex(e, adxCanvas);
+	    drawAll();
+	    showAdxTooltip(e, hoverIndex);
+	    if (hoverIndex >= 0) showKTooltip(e, hoverIndex);
+	    else kTooltip.style.display = 'none';
+	});
+	adxCanvas.addEventListener('mouseleave', () => {
+	    hoverIndex = -1; drawAll();
+	    adxTooltip.style.display = 'none';
+	    kTooltip.style.display = 'none';
+	});
+	/* ==============================
+	   初始化与控制
+	   ============================== */
+	function rebuild() {
+	    period = parseInt(document.getElementById('periodSelect').value);
+	    dataCount = parseInt(document.getElementById('countSelect').value);
+	    klineData = generateKline(dataCount);
+	    adxResult = computeADX(klineData, period);
+	    const vis = getVisibleData();
+	    document.getElementById('dataInfo').textContent = `${vis.length} 根K线 · 周期 ${period} · ADX有效 ${vis.filter(d=>d.valid).length} 根`;
+	    hoverIndex = -1;
+	    drawAll();
+	}
+	document.getElementById('periodSelect').addEventListener('change', rebuild);
+	document.getElementById('countSelect').addEventListener('change', rebuild);
+	document.getElementById('regenBtn').addEventListener('click', rebuild);
+	window.addEventListener('resize', () => { resizeCanvases(); drawAll(); });
+	// 启动
+	resizeCanvases();
+	rebuild();
+	</script>
+	</body>
+	</html>
