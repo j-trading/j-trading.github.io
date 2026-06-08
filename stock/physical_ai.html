@@ -9,421 +9,359 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-    background: linear-gradient(160deg, #060612 0%, #0b1628 40%, #0d0f20 100%);
+    background: linear-gradient(135deg, #0a0a1a 0%, #0d1b2a 50%, #0a0a1a 100%);
     color: #e0e0e0;
     overflow: hidden;
     height: 100vh;
 }
 #main { width: 100vw; height: 100vh; }
-
-/* 顶部标题 */
-#title-area {
+#info-panel {
     position: absolute;
-    top: 24px;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-    z-index: 10;
+    top: 20px;
+    left: 20px;
+    background: rgba(10, 10, 30, 0.9);
+    border: 1px solid rgba(100, 180, 255, 0.3);
+    border-radius: 12px;
+    padding: 20px 24px;
+    max-width: 420px;
+    backdrop-filter: blur(10px);
     pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 10;
 }
-#title-area h1 {
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    background: linear-gradient(135deg, #4fc3f7 0%, #a78bfa 50%, #ffb74d 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 6px;
+#info-panel.active { opacity: 1; }
+#info-panel h2 {
+    font-size: 20px;
+    margin-bottom: 8px;
+    color: #64b4ff;
 }
-#title-area .subtitle {
+#info-panel .subtitle { font-size: 13px; color: #8899aa; margin-bottom: 12px; }
+#info-panel .desc { font-size: 14px; line-height: 1.6; color: #c0ccd8; }
+#info-panel .stats { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+#info-panel .stat {
+    background: rgba(100, 180, 255, 0.1);
+    border: 1px solid rgba(100, 180, 255, 0.2);
+    border-radius: 6px;
+    padding: 6px 10px;
     font-size: 12px;
-    color: #556677;
-    letter-spacing: 1px;
+    color: #8cc8ff;
 }
-
-/* 图例 */
+.stock-table {
+    margin-top: 12px;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+.stock-table th {
+    text-align: left;
+    padding: 6px 8px;
+    background: rgba(100, 180, 255, 0.15);
+    color: #8cc8ff;
+    font-weight: 500;
+}
+.stock-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid rgba(100, 180, 255, 0.1);
+    color: #c0ccd8;
+}
+.stock-table .code { color: #64b4ff; font-family: monospace; }
+.stock-table .highlight { color: #ffb464; font-size: 11px; }
 #legend {
     position: absolute;
-    bottom: 28px;
+    bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 24px;
-    background: rgba(8, 10, 28, 0.88);
-    border: 1px solid rgba(100, 180, 255, 0.15);
+    gap: 20px;
+    background: rgba(10, 10, 30, 0.85);
+    border: 1px solid rgba(100, 180, 255, 0.2);
     border-radius: 10px;
-    padding: 12px 28px;
+    padding: 12px 24px;
     z-index: 10;
-    backdrop-filter: blur(8px);
 }
 .legend-item {
     display: flex;
     align-items: center;
     gap: 8px;
     font-size: 13px;
-    color: #99aabb;
+    color: #c0ccd8;
 }
 .legend-dot {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
-    box-shadow: 0 0 6px currentColor;
 }
-
-/* 操作提示 */
-#hint {
+#title-area {
     position: absolute;
-    top: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 12px;
-    color: #445566;
+    top: 20px;
+    right: 30px;
+    text-align: right;
     z-index: 10;
-    pointer-events: none;
-    animation: fadeHint 4s ease-out forwards;
 }
-@keyframes fadeHint {
-    0%, 60% { opacity: 1; }
-    100% { opacity: 0; }
+#title-area h1 {
+    font-size: 28px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #64b4ff, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 4px;
 }
+#title-area .subtitle {
+    font-size: 13px;
+    color: #667788;
+}
+.tooltip-trigger { cursor: pointer; }
 </style>
 </head>
 <body>
-
 <div id="title-area">
     <h1>物理AI产业链知识图谱</h1>
-    <div class="subtitle">Physical AI Industry Chain &mdash; Tree View</div>
+    <div class="subtitle">Physical AI Industry Chain Knowledge Graph</div>
 </div>
-
-<div id="hint">滚轮缩放 · 拖拽平移 · 点击节点展开/折叠</div>
-
+<div id="info-panel"></div>
 <div id="legend">
-    <div class="legend-item"><span class="legend-dot" style="background:#a78bfa; color:#a78bfa;"></span>物理AI</div>
-    <div class="legend-item"><span class="legend-dot" style="background:#4fc3f7; color:#4fc3f7;"></span>基础设施层</div>
-    <div class="legend-item"><span class="legend-dot" style="background:#ffb74d; color:#ffb74d;"></span>模型与平台层</div>
-    <div class="legend-item"><span class="legend-dot" style="background:#81c784; color:#81c784;"></span>硬件层</div>
-    <div class="legend-item"><span class="legend-dot" style="background:#e57373; color:#e57373;"></span>应用层</div>
-    <div class="legend-item"><span class="legend-dot" style="background:#90a4ae; color:#90a4ae;"></span>领域</div>
-    <div class="legend-item"><span class="legend-dot" style="background:#ffcc80; color:#ffcc80;"></span>股票</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#4fc3f7;"></span>基础设施层</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#ffb74d;"></span>模型与平台层</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#81c784;"></span>硬件层</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#e57373;"></span>应用层</div>
 </div>
-
 <div id="main"></div>
 
 <script>
-const DATA = {"name": "物理AI", "name_en": "Physical AI", "description": "物理AI（Physical AI）是人工智能从虚拟世界迈向实体世界的革命性技术路径，通过融合仿真训练、数字孪生和具身智能，使AI能够理解重力、摩擦、惯性等物理规律，并在真实世界中自主完成复杂任务。预计至2032年全球市场规模将达152.4亿美元，至2040年关联产业规模有望达到3.25万亿美元。", "market_cagr": "47.2%", "market_size_2032": "152.4亿美元", "market_size_2040": "3.25万亿美元", "children": [{"name": "基础设施层", "name_en": "Infrastructure Layer", "subtitle": "算力与仿真底座", "description": "基础设施层是物理AI产业链的基石，提供强大的算力支撑和高保真的仿真环境，确保物理AI模型能够在虚拟世界中“学习百万次”，为实体世界的操作奠定基础。", "children": [{"name": "算力硬件", "name_en": "Computing Hardware", "description": "提供物理AI训练与推理所需的高性能算力基础设施，包括AI芯片、AI服务器、智算中心等", "stocks": [{"code": "NVDA", "name": "英伟达", "name_en": "NVIDIA", "type": "美股", "role": "物理AI算力基础设施绝对霸主，提供从训练芯片（Blackwell架构）、仿真平台（Omniverse/Isaac Sim）到边缘推理（Jetson Orin/Thor）的全栈解决方案", "market_share": "全球AI训练加速器市占率约90%+；数据中心GPU市占率约88%（IDC/Gartner 2025估计）", "highlight": "FY2026总营收2,159.4亿美元（+65% YoY），数据中心营收1,937.4亿美元；Omniverse为物理AI数字孪生核心平台，Isaac Sim/Drive Sim分别为机器人和自动驾驶仿真训练平台；CUDA生态构成算力护城河", "revenue": "FY2026（截至2026年1月）总营收2,159.4亿美元（+65%），其中数据中心1,937.4亿美元（+68%）", "exchange": "纳斯达克", "evidence": {"FY2026总营收2,159.4亿美元": "NVIDIA FY2026 10-K Filing (SEC CIK 0001045810, 2026-02-25), Table 55", "数据中心营收1,937.4亿美元": "NVIDIA FY2026 10-K, Net Revenue by End Market", "Blackwell架构为数据中心收入主体": "NVIDIA FY2026 10-K: 'Blackwell architectures represented the majority of our Data Center revenue'", "Omniverse for Physical AI": "NVIDIA FY2026 10-K: 'Omniverse for physical AI applications'", "AI训练加速器市占率约90%": "Gartner 2025全球AI加速器市场报告; IDC 2025估计"}, "rating": 5}, {"code": "601138", "name": "工业富联", "name_en": "Foxconn Industrial Internet", "type": "A股", "role": "全球AI服务器制造龙头，英伟达GB200等先进AI服务器主力代工厂", "market_share": "全球AI服务器市占率约42.3%（IDC数据），英伟达DGX/HGX高端整机代工份额超40%", "highlight": "2025年AI服务器收入同比增长超3倍（>300%）；800G以上高速交换机全球市占率75.8%", "revenue": "2025年营收9,028.87亿元（+48.22%），其中云计算6,026.79亿元（+88.70%）；AI服务器收入同比+300%+", "exchange": "上交所", "evidence": {"2025年营收9,028.87亿元（+48.22%）": "工业富联2025年年度报告摘要（巨潮资讯, 2026-03-11）", "云计算营收6,026.79亿元（+88.70%）": "工业富联2025年年度报告摘要", "AI服务器市占率约42.3%": "IDC 2025全球AI服务器市场追踪报告", "AI服务器收入同比增长超3倍": "工业富联2025年年度报告摘要", "800G交换机市占率75.8%": "Dell'Oro Group 2025报告"}, "rating": 4}, {"code": "—", "name": "华为昇腾", "name_en": "Huawei Ascend", "type": "未上市", "role": "中国国产AI芯片绝对主力，美国出口管制后国产替代核心选项，提供从芯片(CANN)到框架(MindSpore)的全栈自主算力方案", "market_share": "中国国产AI加速器市场估计50-70%（IDC中国2025）；全球AI加速器市场约3-5%", "highlight": "Ascend 910C对标H100级别性能；CloudMatrix整合昇腾算力；全栈自主可控不受美国出口管制影响", "revenue": "华为2024年总营收8,621亿元（+22.4%），ICT基础设施业务3,699亿元；昇腾芯片营收未单独披露", "exchange": "未上市（华为技术有限公司，员工持股非公众公司）", "evidence": {"华为2024年总营收8,621亿元": "华为2024年年度报告 (huawei.com/cn/annual-report/2024)", "ICT基础设施业务3,699亿元": "华为2024年年度报告", "中国国产AI加速器市占率50-70%": "IDC中国2025; TrendForce估计（注：分歧较大，部分报告估算30-50%）", "Ascend 910C对标H100": "华为Ascend产品发布会; 第三方性能评测报告"}, "rating": 4}, {"code": "688802", "name": "沐曦股份", "name_en": "MetaX Technology", "type": "A股", "role": "国产全栈高性能GPU芯片新锐，\"1+6+X\"战略明确布局具身智能等物理AI前沿方向，四年营收增长超3854倍", "market_share": "国产GPU第一梯队（与摩尔线程并列）；2025年GPU累计销量超5.5万颗；MXMACA软件栈兼容CUDA生态，注册开发者超30万", "highlight": "2025年12月科创板上市；曦云C600全国产工艺GPU量产在即，C700对标H100；曦索X系列（128GB显存）布局AI4S科学智能+具身智能；56.51%高毛利率体现产品竞争力；已部署10余个智算集群", "revenue": "2025年营收16.44亿元（+121.26%），毛利率56.51%，亏损7.89亿（同比收窄44%），研发投入10.27亿", "exchange": "上交所科创板", "evidence": {"2025年营收16.44亿元（+121.26%）": "沐曦股份2025年年度报告（2026-03-26）", "\"1+6+X\"战略含具身智能": "沐曦股份2025年年报/战略发布会", "GPU销量超5.5万颗": "沐曦股份2025年年度报告", "MXMACA生态注册开发者超30万": "沐曦MXMACA开源社区2025年数据"}, "data_note": "尚处亏损阶段（-7.89亿），但亏损同比收窄44%；具身智能为\"X\"前沿方向之一，非当前主要收入来源", "rating": 3}, {"code": "688795", "name": "摩尔线程", "name_en": "Moore Threads", "type": "A股", "role": "国产全功能GPU龙头，自研MUSA架构+云边端一体化方案，\"长江\"SoC直击具身智能+机器人+智能汽车端侧部署，创始人张建中曾任英伟达全球副总裁", "market_share": "国产全功能GPU第一股；MUSA架构五代迭代，夸娥万卡集群算力达10 Exa-Flops；累计专利1,854项", "highlight": "\"长江\"SoC是唯一明确面向具身智能的国产GPU端侧芯片，构建从模型训练→仿真模拟→端侧部署的全国产具身智能计算软硬件栈；MTT S5000单卡1,000 TFLOPS（80GB显存）；已对DeepSeek/智谱/MiniMax等主流大模型实现Day-0适配", "revenue": "2025年营收15.06亿元（+243.37%），毛利率65.57%，亏损10.01亿（研发投入13.05亿占营收86.68%），上市募资75.76亿", "exchange": "上交所科创板", "evidence": {"2025年营收15.06亿元（+243.37%）": "摩尔线程2025年年度报告（2026年审计数据）", "\"长江\"SoC赋能具身智能+边缘智能": "摩尔线程2025年报/产品发布会/IPO招股书", "具身智能计算全栈技术栈": "摩尔线程官方战略发布/投资者交流", "MTT S5000单卡1,000 TFLOPS": "摩尔线程产品规格书"}, "data_note": "研发投入占营收86.68%，预计最早2027年实现盈利；\"长江\"SoC仍在早期推广阶段", "rating": 3}]}, {"name": "液冷技术", "name_en": "Liquid Cooling Technology", "description": "为物理AI高功耗算力设备提供精密温控解决方案，解决智算中心散热难题", "stocks": [{"code": "002837", "name": "英维克", "name_en": "Envicool", "type": "A股", "role": "英伟达MGX生态合作伙伴，专注AI算力设备精密温控，液冷产品UQD/MQD通过英伟达MGX生态兼容性认证", "market_share": "英伟达MGX生态兼容性认证", "highlight": "智算中心迈入兆瓦级时代，液冷技术成为散热关键", "revenue": "2024年营收约36亿元", "exchange": "深交所", "evidence": {"MGX生态合作伙伴认证": "英维克官方公告/英伟达MGX生态伙伴名单", "液冷业务营收占比不足8%": "英维克2024年年度报告业务拆分", "2024年营收约36亿元": "英维克2024年年度报告"}, "data_note": "【已修正】代码从002802修正为002837；合作关系从“英伟达认证液冷技术龙头”修正为MGX生态合作伙伴；液冷业务营收占比不足8%，非英伟达直接供应商", "rating": 2}, {"code": "872808", "name": "曙光数创", "name_en": "Sugon DataEnergy", "type": "A股", "role": "国内算力中心液冷绝对龙头，浸没+冷板双技术路线，中科曙光子公司", "market_share": "中国算力中心液冷市场市占率超50%（中国电子技术标准化研究院），连续多年蝉联第一", "highlight": "C8000浸没相变液冷V3.0单机柜功率超900kW，支撑全球首个640卡超节点大规模落地，PUE最低1.04；客户覆盖字节/阿里/腾讯/百度/快手；海外已落地马来西亚、日本", "revenue": "2025年营收8.82亿元（+74.29%），浸没液冷4.58亿元（+370.58%）", "exchange": "北交所", "evidence": {"2025年营收8.82亿元（+74.29%）": "曙光数创2025年年度报告", "液冷市占率超50%连续多年第一": "中国电子技术标准化研究院数据中心液冷市场报告", "C8000浸没液冷单机柜640卡超节点": "曙光数创2025年产品发布会/年报"}, "rating": 4}, {"code": "300499", "name": "高澜股份", "name_en": "Goaland Energy", "type": "A股", "role": "特高压纯水冷却设备龙头，冷板+浸没双液冷方案提供商，数据中心液冷打造第二成长曲线", "market_share": "特高压直流纯水冷却设备国内第一；获工信部专精特新\"小巨人\"、制造业单项冠军认定", "highlight": "具备液冷全链条一站式能力（液冷板/CDU/TANK/管网/冷塔）；客户含字节/阿里/腾讯/浪潮/中兴/新华三；美国子公司布局北美算力液冷市场", "revenue": "2025年营收约10.39亿元，扭亏为盈；在手订单11.39亿元（截至2025.6.30）", "exchange": "深交所创业板", "evidence": {"2025年营收约10.39亿元": "高澜股份2025年年度报告/券商研报一致预期", "专精特新小巨人+制造业单项冠军": "工信部认定公告", "美国子公司布局北美算力液冷": "高澜股份投资者关系活动记录"}, "data_note": "数据中心液冷业务2025H1同比-8.73%，仍处放量爬坡阶段；是否进入英伟达产业链尚待确认", "rating": 3}]}, {"name": "仿真引擎", "name_en": "Simulation Engine", "description": "提供多物理场CAE仿真能力，为机器人和自动驾驶提供虚拟训练环境", "stocks": [{"code": "ANSS", "name": "Ansys", "name_en": "Ansys (Synopsys子公司)", "type": "美股", "role": "全球CAE仿真软件绝对龙头，物理AI仿真基础设施核心供应商，2025年被Synopsys以350亿美元收购", "market_share": "全球CAE市场占有率约25-30%，结构分析/流体仿真/电磁仿真三大领域均居首位", "highlight": "Twin Builder数字孪生构建平台；与NVIDIA Omniverse/Isaac Sim深度集成，为物理AI训练提供高保真虚拟环境；Synopsys收购后EDA+CAE整合强化全流程仿真能力", "revenue": "FY2024（截至2024年12月）营收约26.4亿美元", "exchange": "纳斯达克（被Synopsys收购后退市）", "evidence": {"全球CAE市占率约25-30%": "Gartner/CIMdata 2024全球CAE市场报告", "FY2024营收约26.4亿美元": "Ansys FY2024年度报告 (SEC 10-K)", "被Synopsys以350亿美元收购": "Synopsys 2025年1月收购公告; SEC S-4注册声明", "与NVIDIA Omniverse集成": "Ansys官方技术合作公告"}, "rating": 5}, {"code": "DASTY", "name": "达索系统", "name_en": "Dassault Systèmes", "type": "美股", "role": "3DEXPERIENCE平台构建者，SIMULIA多物理场仿真+虚拟孪生双轮驱动，2026年与NVIDIA签署战略合作共建工业AI架构", "market_share": "全球PLM市场排名第二；SIMULIA在多物理场仿真领域与Ansys并列为第一梯队", "highlight": "与NVIDIA共建Omniverse+3DEXPERIENCE工业AI共享架构；虚拟孪生(Virtual Twin)技术为物理AI提供高保真训练环境；2025年在上海开设大中华区首个3DEXPERIENCE Lab", "revenue": "FY2024（截至2024年12月）营收约62亿欧元（约67亿美元）", "exchange": "纳斯达克ADR / 泛欧交易所(DSY.PA)", "evidence": {"FY2024营收约62亿欧元": "Dassault Systèmes FY2024年度报告", "与NVIDIA战略合作": "Dassault Systèmes 2026年2月官方公告", "全球PLM市场排名第二": "CIMdata 2024全球PLM市场报告"}, "rating": 4}, {"code": "688507", "name": "索辰科技", "name_en": "Suochen Technology", "type": "A股", "role": "国内CAE仿真软件绝对龙头，A股覆盖学科最全的多物理场CAE仿真软件厂商", "market_share": "2025年CAE软件收入2.84亿元，占总收入61%，毛利率86.33%", "highlight": "自研“天工·开物”物理AI平台，2025年物理AI首次贡献收入5816万元，超额完成股权激励年度目标3000万元", "revenue": "2025年总营收约4.66亿元（CAE软件2.84亿元占61%）", "exchange": "上交所科创板", "evidence": {"2025年CAE软件收入2.84亿元": "索辰科技2025年年度报告", "物理AI收入5816万元": "索辰科技2025年年度报告/股权激励达成公告", "毛利率86.33%": "索辰科技2025年年度报告"}, "data_note": "【已修正】“唯一”表述改为“覆盖学科最全”；物理AI产品于2025年3月发布，2024年无独立收入基数，原“同比增长240%”已删除", "rating": 4}]}]}, {"name": "模型与平台层", "name_en": "Model & Platform Layer", "subtitle": "物理AI大脑", "description": "模型与平台层是物理AI产业链的“认知中枢”，负责将物理世界的规律融入AI模型，构建VLM（视觉语言模型）、VLA（视觉语言动作模型）和世界模型三大技术路径。", "children": [{"name": "世界模型", "name_en": "World Model", "description": "构建物理世界的数字孪生与仿真模型，为AI提供物理直觉能力", "stocks": [{"code": "06651.HK", "name": "五一视界", "name_en": "51World", "type": "港股", "role": "港股“物理AI第一股”，发布全球首款“物理直觉”世界模型51World Model", "market_share": "智驾仿真市占率53.5%（弗若斯特沙利文数据，中国端到端高阶智驾仿真及数据平台市场）", "highlight": "2025年营收3.48亿元同比增长21%；深度配套高阶自动驾驶与人形机器人仿真测试，覆盖全球TOP20车企中的55%", "revenue": "2025年营收3.48亿元（+21%）", "exchange": "港交所", "evidence": {"2025年营收3.48亿元（+21%）": "五一视界2025年年度报告（港交所公告）", "智驾仿真市占率53.5%": "弗若斯特沙利文(Frost & Sullivan)行业研究报告", "覆盖全球TOP20车企55%": "五一视界招股书/年度报告"}, "rating": 4}, {"code": "—", "name": "World Labs", "name_en": "World Labs", "type": "未上市", "role": "李飞飞创立，全球世界模型赛道估值最高的公司（~50亿美元），空间智能（Spatial Intelligence）定义者，让AI理解、生成并与3D世界交互", "market_share": "全球世界模型赛道估值第一（~50亿美元）；产品Marble已商业化（$20-95/月订阅），支持导出至Unity/Unreal/VR设备", "highlight": "成立16个月估值从2亿→50亿美元（+5倍）；Marble可通过图片/视频/文字生成连贯3D世界；投资方含NVIDIA/AMD/a16z/Autodesk/淡马锡；技术基于NeRF+3D Gaussian Splatting，可输出至机器人仿真训练环境", "revenue": "暂无公开营收；累计融资约13亿美元（2026年初新一轮10亿美元），2024年9月融资2.3亿美元", "exchange": "未上市（Private），总部旧金山", "evidence": {"估值约50亿美元": "2026年1月融资报道（Autodesk领投2亿美元）", "Marble产品发布": "World Labs 2025年11月官方发布", "李飞飞创立World Labs": "2024年4月公司成立公告", "NVIDIA/AMD参投": "World Labs融资公告/媒体报道"}, "rating": 5}]}, {"name": "VLA/VLM平台", "name_en": "VLA/VLM Platform", "description": "视觉语言动作模型与视觉语言模型平台，实现从感知到动作的转化闭环", "stocks": [{"code": "GOOGL", "name": "Google DeepMind", "name_en": "Alphabet / Google DeepMind", "type": "美股", "role": "Gemini Robotics/RT-2全球VLA模型技术先驱，物理AI大模型上游定义者，全球首个将大语言模型知识迁移到机器人控制的VLA模型(RT-2)创造者", "market_share": "全球AI大模型市场份额前三（与OpenAI、Anthropic并列）；VLA/具身智能模型领域学术影响力最大", "highlight": "RT-2（2023）实现零样本泛化机器人控制；Gemini Robotics（2025）基于Gemini多模态模型构建具身智能平台；Gemini Robotics On-Device支持端侧推理低延迟执行", "revenue": "Alphabet 2024年总营收约3,500亿美元，Google Cloud（含DeepMind AI服务）432亿美元；DeepMind本身不单独披露营收", "exchange": "纳斯达克", "evidence": {"RT-2全球首个VLA模型": "Google DeepMind 2023年论文 'RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control'", "Gemini Robotics 2025发布": "Google DeepMind 2025年官方博客/技术报告", "Alphabet 2024年总营收": "Alphabet FY2024 10-K Filing (SEC)", "Google Cloud营收432亿美元": "Alphabet FY2024 10-K, Segment Revenue"}, "rating": 5}, {"code": "300825", "name": "阿尔特", "name_en": "IAT Automobile", "type": "A股", "role": "英伟达Solution Advisor（顾问级）合作伙伴，基于Omniverse和Isaac Sim平台进行汽车研发与机器人仿真", "market_share": "已落地Apollo RT6、文远小巴等多个L4级自动驾驶项目", "highlight": "将大模型+数字孪生+物理仿真应用于汽车研发、自动驾驶训练", "revenue": "2024年营收约11.5亿元", "exchange": "深交所创业板", "evidence": {"英伟达Solution Advisor合作伙伴": "阿尔特官方公告/英伟达合作伙伴名录", "2024年营收约11.5亿元": "阿尔特2024年年度报告"}, "data_note": "【已修正】原“深度绑定英伟达”过度渲染，修正为实际合作关系级别；机器人业务仍处早期培育阶段", "rating": 2}, {"code": "—", "name": "Physical Intelligence", "name_en": "Physical Intelligence (Pi)", "type": "未上市", "role": "「物理世界的OpenAI」，全球最受关注的机器人通用基础模型公司。π系列VLA模型已迭代至π₀.6，实现亚毫米级精度操作（RL Token技术，15分钟训练）和90%+任务成功率", "market_share": "VLA/具身智能基础模型领域估值最高、融资最多的独立公司", "highlight": "2年估值从4亿→24亿→56亿→110亿美元+；2026年C轮洽谈10亿美元（Founders Fund领投）；引入RL Token（15分钟训练实现亚毫米级精度）和MEM多尺度记忆系统（>10分钟连续作业）；投资方含Jeff Bezos、OpenAI、Alphabet、NVIDIA", "revenue": "暂无产品和收入，仍处于模型研发阶段；累计融资超10亿美元", "exchange": "未上市（Private）", "evidence": {"π₀.6模型90%+任务成功率": "Physical Intelligence官方博客/技术报告", "C轮估值110亿美元+": "TechCrunch/Bloomberg融资报道", "RL Token和MEM系统": "Physical Intelligence 2025年技术论文"}, "rating": 5}, {"code": "—", "name": "Wayve", "name_en": "Wayve", "type": "未上市", "role": "端到端具身AI驾驶模型先驱，单一神经网络直接从传感器映射到驾驶动作，无需高精地图即可零样本泛化至新城市，\"驾驶的GPT时刻\"推动者", "market_share": "估值约86亿美元；AI Driver模型已在70+国家、500+城市测试，219城市零本地数据零样本泛化", "highlight": "2025年完成12亿美元D轮融资（NVIDIA/SoftBank/Microsoft/奔驰/Nissan/Stellantis/Uber参投）；Nissan量产协议2027年装车；与Uber合作2026年伦敦启动L4 Robotaxi；NVIDIA DRIVE Thor平台加持", "revenue": "暂无公开营收；累计融资超25亿美元", "exchange": "未上市（Private），总部伦敦，2017年成立", "evidence": {"D轮融资12亿美元估值86亿": "Wayve 2025年D轮融资公告", "Nissan 2027年量产协议": "Wayve/Nissan 2025年联合公告", "Uber伦敦L4 Robotaxi合作": "Wayve/Uber 2025年合作公告", "500+城市零样本泛化": "Wayve AI-500路测报告"}, "rating": 4}, {"code": "—", "name": "Skild AI", "name_en": "Skild AI", "type": "未上市", "role": "\"机器人通用大脑\"构建者，开发不依赖特定硬件的机器人基础模型（Skild Brain），让任何形态的机器人学会感知与决策", "market_share": "估值约140亿美元（2025年12月），机器人基础模型赛道估值最高；投资方含SoftBank/NVIDIA/Jeff Bezos/Lightspeed", "highlight": "2025年7月发布首个通用模型Skild Brain，机器人可拾取物体/爬楼梯/跨环境适应；omnibodied设计——同一AI驱动任意形态机器人；成立2年融资超18亿美元", "revenue": "暂无营收，处于模型研发阶段；累计融资超18亿美元", "exchange": "未上市（Private），2023年成立，前Meta AI研究员创立", "evidence": {"C轮估值140亿美元": "SoftBank/NVIDIA 2025年12月投资报道", "Skild Brain发布": "Skild AI 2025年7月官方发布", "前Meta AI研究员创立": "Skild AI公司介绍/Crunchbase"}, "rating": 4}]}]}, {"name": "硬件层", "name_en": "Hardware Layer", "subtitle": "感知与执行", "description": "硬件层是连接数字世界与物理世界的桥梁，包含感知系统（“眼睛”与“触觉”）和执行系统（“肌肉”与“关节”），为物理AI提供精确的环境理解与精准的物理操作能力。", "children": [{"name": "感知硬件", "name_en": "Perception Hardware", "description": "为物理AI提供3D视觉感知与动作捕捉能力，实现精确的环境理解", "sub_domains": [{"name": "3D视觉感知", "name_en": "3D Vision Perception", "stocks": [{"code": "688322", "name": "奥比中光", "name_en": "Orbbec", "type": "A股", "role": "全球少数掌握六大3D视觉技术的企业（结构光/iToF/双目/dToF/激光雷达/工业三维测量），拥有自主知识产权的深度引擎算法", "market_share": "国内服务机器人市场占有率超70%；韩国商用及工业移动机器人3D视觉市场份额达72%（Interact Analysis）", "highlight": "2025年营收9.41亿元同比增长66.66%，成功扭亏为盈；已进入优必选、智元、天工、乐聚等主流人形机器人供应链", "revenue": "2025年营收9.41亿元（+66.66%），扭亏为盈", "exchange": "上交所科创板", "evidence": {"2025年营收9.41亿元（+66.66%）": "奥比中光2025年年度报告", "国内服务机器人市占率超70%": "Interact Analysis 中国服务机器人3D视觉市场报告", "韩国市占率72%": "Interact Analysis 韩国移动机器人3D视觉市场报告"}, "rating": 4}]}, {"name": "动作捕捉", "name_en": "Motion Capture", "stocks": [{"code": "688400", "name": "凌云光", "name_en": "LUSTER LightTech", "type": "A股", "role": "国内机器视觉龙头，机器视觉行业整体销售额国内第一（CMVU 2021年数据），消费电子可配置视觉系统国产第一", "market_share": "消费电子可配置视觉系统市占率22.4%，国产第一（整体第三，次于康耐视、基恩士）", "highlight": "LCubor系列工业3D相机和Bumblebee系列双目立体视觉系统赋能机器人物理空间感知；OptiTrack/Swift系列提供运动捕捉能力", "revenue": "2024年营收约28.8亿元", "exchange": "上交所科创板", "evidence": {"消费电子可配置视觉系统市占率22.4%国产第一": "CMVU 2021年中国机器视觉市场报告", "2024年营收约28.8亿元": "凌云光2024年年度报告"}, "data_note": "【已修正】原报告将奥比中光的Femto/Gemini产品误归为凌云光产品，已修正为凌云光自有产品线；市占率从“第一”修正为“国产第一”", "rating": 3}]}, {"name": "激光雷达", "name_en": "LiDAR", "description": "激光雷达是物理AI感知系统的核心传感器，为机器人和自动驾驶提供高精度3D点云数据", "stocks": [{"code": "HSAI", "name": "禾赛科技", "name_en": "Hesai Technology", "type": "美股", "role": "全球首家实现全年GAAP盈利的激光雷达企业，ADAS+机器人双轮驱动，NVIDIA DRIVE Hyperion 10主激光雷达合作伙伴", "market_share": "全球ADAS车载激光雷达市占率超40%，中国第一（盖世汽车/GGII/Yole数据）；机器人激光雷达多细分领域第一", "highlight": "2025年总交付162万台（+222.9%），其中机器人激光雷达23.9万台（+425.8%）；客户覆盖宇树/小马智行/文远知行/萝卜快跑/追觅科技（1000万颗独家订单）；与NVIDIA Halos安全实验室合作", "revenue": "2025年营收30.3亿元（+45.8%），GAAP净利润4.4亿元（扭亏为盈），毛利率41.8%", "exchange": "纳斯达克（港股02525.HK）", "evidence": {"2025年营收30.3亿元GAAP净利润4.4亿元": "禾赛科技2025年Q4及全年财报", "ADAS激光雷达市占率超40%中国第一": "盖世汽车研究院/GGII/Yole Group 2025年报告", "NVIDIA DRIVE Hyperion 10合作伙伴": "NVIDIA/禾赛科技官方合作公告", "总交付162万台": "禾赛科技2025年全年财报交付数据"}, "rating": 5}]}, {"name": "力觉传感", "name_en": "Force/Tactile Sensing", "description": "六维力/力矩传感器是机器人触觉感知的核心部件，为物理AI提供精确的力反馈与柔顺控制能力", "stocks": [{"code": "—", "name": "坤维科技", "name_en": "Kunwei Technology", "type": "未上市", "role": "国内六维力传感器头部企业，高精度力控解决方案提供商，核心团队拥有近20年航天科研背景", "market_share": "协作机器人末端附件市场占有率超80%，行业前列；人形机器人六维力传感器已量产并出口北美", "highlight": "六维力传感器准度0.5%（含串扰），远超行业2-2.5%水平；已与国内头部人形机器人企业全面合作；小米人形机器人手腕部位采用KWR63系列；股东含小米产投/高瓴创投/深创投/汇川产投/三花控股/舜宇", "revenue": "未公开披露；融资至B轮（2025.2），累计投资方含小米/高瓴/深创投/汇川/三花/舜宇等", "exchange": "未上市（Private），成立于2018年", "evidence": {"协作机器人末端市占率超80%": "高工机器人产业研究所(GGII)数据", "六维力传感器准度0.5%": "坤维科技官方产品规格书", "小米人形机器人已采用KWR63": "小米机器人供应链公开信息/坤维科技官方", "2025年B轮融资小米高瓴领投": "坤维科技B轮融资公告（2025.2）"}, "rating": 4}]}]}, {"name": "执行硬件", "name_en": "Execution Hardware", "description": "为物理AI提供精准的物理操作能力，包括核心零部件和机器人控制器", "sub_domains": [{"name": "减速器", "name_en": "Precision Reducer", "description": "谐波减速器是机器人旋转关节的核心传动部件，决定精度与寿命", "stocks": [{"code": "6324.T", "name": "Harmonic Drive Systems", "name_en": "Harmonic Drive Systems", "type": "日股", "role": "全球谐波减速器发明者与绝对龙头，与绿的谐波构成全球“双寡头”格局，谐波传动原理发明者（1960年代Musim专利）", "market_share": "全球谐波减速器市场份额约35-40%；日本工业机器人市场占有率超60%", "highlight": "谐波传动原理发明者，技术代际与品牌优势领先；日本工业机器人市场占有率超60%；精密行星齿轮Harmonic Planetary系列", "revenue": "FY2026（推算）约680-700亿日元（约4.7亿美元）", "exchange": "东京证券交易所", "evidence": {"全球谐波减速器市占率约35-40%": "BCC Research 2024全球精密减速器市场报告", "日本工业机器人市场占有率超60%": "日本机器人工业会(JARA)统计数据", "FY2026营收约680-700亿日元": "HDSI FY2026 Q4季报（营收173.7亿日元）推算"}, "rating": 4}, {"code": "688017", "name": "绿的谐波", "name_en": "Leaderdrive", "type": "A股", "role": "国内首家完全拥有自主知识产权的谐波减速器企业，产品技术达世界前列水准，国产第一", "market_share": "国产减速器市场占有率约30%-40%（摩根大通估计），国产第一", "highlight": "2025年谐波减速器销量42.52万台（同比+72.48%），2026年锚定百万台级产能规划，已进入特斯拉、优必选供应链", "revenue": "2025年营收5.71亿元（+47.31%），谐波减速器销量42.52万台（+72.48%）", "exchange": "上交所科创板", "evidence": {"2025年营收5.71亿元": "绿的谐波2025年年度报告（巨潮资讯, 2026-04-23）", "谐波减速器销量425,158台（+72.48%）": "绿的谐波2025年年度报告，产销量情况分析表", "国产减速器市占率约30-40%": "摩根大通(J.P. Morgan)行业研究报告", "已进入特斯拉供应链": "绿的谐波投资者关系活动记录"}, "data_note": "【已修正】出货量从“接近50万台”修正为精确数据42.52万台；市占率从“超35%”修正为“约30%-40%”", "rating": 5}]}, {"name": "伺服与驱动", "name_en": "Servo & Drive", "description": "伺服电机与驱动系统是机器人的动力来源，决定力控精度与响应速度", "stocks": [{"code": "6506.T", "name": "安川电机", "name_en": "Yaskawa Electric", "type": "日股", "role": "全球伺服电机龙头、四大工业机器人巨头之一，与汇川技术构成全球伺服领域核心对标", "market_share": "全球伺服电机市场份额约15-20%（常年位居全球第一或第二）；工业机器人全球市占率约10%", "highlight": "Sigma系列伺服驱动器/电机（Sigma-7/Sigma-X）全球标杆；Motoman系列工业机器人；近年布局人形机器人伺服关节模组；AC伺服领域技术积累超50年", "revenue": "FY2026（推算）约5,700-5,900亿日元（约39亿美元）", "exchange": "东京证券交易所", "evidence": {"全球伺服电机市占率约15-20%": "Mordor Intelligence 2024全球伺服电机市场报告", "FY2026营收约5,700-5,900亿日元": "安川电机FY2026 Q4季报（营收1,469亿日元）推算", "工业机器人全球市占率约10%": "IFR 2024世界机器人报告"}, "rating": 3}, {"code": "300124", "name": "汇川技术", "name_en": "Inovance Technology", "type": "A股", "role": "工控界“小华为”，伺服系统和高精度运动控制技术领先", "market_share": "国内伺服电机市场占有率第一（约32%，睿工业数据，遥遥领先第二名西门子约9.2%）；低压变频器、SCARA机器人、电梯电控系统也均为国内/全球第一", "highlight": "运动控制技术确保物理AI执行端高精度动作；2025年营收451.05亿元（+21.77%）", "revenue": "2025年营收451.05亿元（+21.77%），伺服系统约68.5亿元", "exchange": "深交所创业板", "evidence": {"国内伺服电机市占率约32%第一": "睿工业2025年中国伺服电机市场报告", "2025年营收451.05亿元（+21.77%）": "汇川技术2025年年度报告摘要（巨潮资讯, 2026-04-28）", "伺服系统收入约68.5亿元": "汇川技术2025年年度报告摘要"}, "rating": 4}]}, {"name": "机电执行器", "name_en": "Electromechanical Actuators", "description": "集成电机+传动+传感的旋转/直线执行器，是人形机器人关节的集成化方向", "stocks": [{"code": "002050", "name": "三花智控", "name_en": "Sanhua Intelligent Controls", "type": "A股", "role": "全球热管理阀件龙头，技术同源延伸至人形机器人机电执行器（特斯拉Optimus旋转+直线执行器核心供应商）和AI数据中心液冷（阀/泵/换热器核心零部件）", "market_share": "空调电子膨胀阀、四通换向阀、车用电子膨胀阀等多项产品全球市占率第一", "highlight": "2025年设立机器人事业部；泰国建生产基地支持特斯拉机器人量产；25H1传统制冷业务+25.5%受益于数据中心液冷需求；机构预计2026年机器人业务开始贡献重要收入增量", "revenue": "2025年营收约310.1亿元（+11%），归母净利润约40.6亿元（+31%）", "exchange": "深交所", "evidence": {"2025年营收约310.1亿元": "三花智控2025年年度报告", "特斯拉Optimus机电执行器核心供应商": "浙商证券/东吴证券研报；特斯拉Optimus供应链披露"}, "rating": 4}, {"code": "601689", "name": "拓普集团", "name_en": "Tuopu Group", "type": "A股", "role": "特斯拉Optimus电驱执行器（直线+旋转）Tier1供应商，从汽车底盘Tier0.5延伸至人形机器人+AI液冷，\"车+机器人+AI\"三大赛道协同", "market_share": "特斯拉Optimus Gen3电驱执行器核心供应商；宁波基地电驱执行器年产能30万套（远期100万台）", "highlight": "2016年起为特斯拉核心供应商（营收占比超30%）；AI液冷已获华为/英伟达首批订单15亿元（2026年交付）；同步拓展小鹏、小米机器人客户；正申请港股IPO", "revenue": "2025年营收295.81亿元（+11.21%），机器人执行器收入仅1359万元（占0.05%）", "exchange": "上交所", "evidence": {"2025年营收295.81亿元": "拓普集团2025年年度报告", "机器人执行器收入1359万元": "拓普集团2025年年度报告业务拆分", "AI液冷获华为英伟达订单15亿元": "拓普集团官方公告/投资者关系活动记录", "宁波基地电驱执行器年产能30万套": "拓普集团2024年项目投产公告"}, "data_note": "机器人业务2025年收入仅1359万元（占比0.05%），产能30万套但无大规模订单落地（高盛2025.11调研确认）；AI液冷订单2026年才开始交付；2025年增收不增利（净利润-7.38%）", "rating": 2}]}, {"name": "机器人控制器", "name_en": "Robot Controller", "stocks": [{"code": "001339", "name": "智微智能", "name_en": "Zhiwei Intelligent", "type": "A股", "role": "AI数智化基座提供商，聚焦具身智能+机器人控制器（工业物联网板块新兴业务）", "market_share": "机器人控制器搭载NVIDIA Isaac平台及Jetson Orin/Thor模组，已有比亚迪、理想汽车等客户订单落地", "highlight": "为英伟达NPN合作伙伴，2025年8月与英伟达全球同步首发智擎EII6300（基于Jetson Thor）", "revenue": "2024年营收约37亿元", "exchange": "深交所", "evidence": {"英伟达NPN合作伙伴": "英伟达NPN合作伙伴名录/智微智能官方公告", "智擎EII6300基于Jetson Thor": "智微智能2025年8月产品发布会", "2024年营收约37亿元": "智微智能2024年年度报告"}, "data_note": "机器人控制器业务处于早期放量阶段，传统主业为行业终端（教育/消费PC）和ICT基础设施", "rating": 2}]}]}]}, {"name": "应用层", "name_en": "Application Layer", "subtitle": "场景落地", "description": "应用层是物理AI产业链的最后一环，将技术转化为商业价值，直接面向终端用户，是验证物理AI技术成熟度和推动数据闭环迭代的关键环节。", "children": [{"name": "人形机器人", "name_en": "Humanoid Robot", "description": "人形机器人是物理AI最具代表性的应用场景，已从实验室走向量产爬坡阶段", "stocks": [{"code": "TSLA", "name": "特斯拉", "name_en": "Tesla", "type": "美股", "role": "全球人形机器人领军企业，Optimus Gen3于2026年夏季启动量产爬坡", "market_share": "2026年产量指引5-15万台（机构预测实际1-5万台）；弗里蒙特工厂设计年产能远期目标100万台", "highlight": "马斯克目标：量产后单台成本控制在2万美元以内（当前小批量BOM成本约4.3万美元）；采用线性执行器技术路线", "revenue": "2024年总营收976.9亿美元；Optimus尚未贡献独立收入", "exchange": "纳斯达克", "evidence": {"2024年总营收976.9亿美元": "Tesla FY2024 10-K Filing (SEC)", "2026年产量指引5-15万台": "Tesla 2026年Q1财报电话会议; 机构研报", "弗里蒙特远期产能100万台": "Tesla投资者日公开演示", "BOM成本约4.3万美元": "Goldman Sachs 2026年拆解报告估计"}, "data_note": "【已修正】“百万台”系远期设计产能非2026年目标；2万美元为量产目标成本非已实现", "rating": 5}, {"code": "—", "name": "Figure AI", "name_en": "Figure AI", "type": "未上市", "role": "全球估值最高的人形机器人独角兽，自研Helix VLA模型实现视觉-语言-动作一体化，物理AI“模型+硬件”一体化标杆", "market_share": "人形机器人商业化落地领先，已在宝马(BMW)、亚马逊(Amazon)工厂部署Figure 03进行实际作业", "highlight": "Figure 03搭载Helix VLA模型；2026年5月公开200小时连续作业直播，累计分拣249,556个包裹零故障停机；投资方包括NVIDIA、Microsoft、OpenAI", "revenue": "未公开，仍处于亏损投入期；2025年C轮融资后估值390亿美元", "exchange": "未上市（Private）", "evidence": {"C轮估值390亿美元": "Bloomberg/TechCrunch 2025年9月报道; PitchBook数据", "Figure 03在宝马/亚马逊部署": "Figure AI官方公告/新闻稿", "200小时零故障直播": "Figure AI 2026年5月官方直播记录", "投资方含NVIDIA/Microsoft/OpenAI": "Figure AI融资公告; Crunchbase数据"}, "rating": 4}, {"code": "—", "name": "智元机器人", "name_en": "Agibot", "type": "未上市", "role": "人形机器人整机头部厂商，覆盖远征（工业/商用）、灵犀（科研教育）、精灵（工业量产）三大系列，全栈自研具身大模型GO-1、PowerFlow关节模组", "market_share": "2025年全球人形机器人出货量市占率39%，全球第一（Omdia 2026.01，出货5,168台）；赛迪(CCID)口径下出货4,000+台、市占率23.5%，排名第二", "highlight": "前华为“天才少年”彭志辉（稚晖君）2023年2月创立；成立3年完成11轮融资累计超30亿元；股东包括高瓴、红杉、腾讯、比亚迪、LG电子；2026年计划港股IPO目标估值400-500亿港元；零部件国产化率超80%，开源百万级真机数据集AgiBot World", "revenue": "2025年约15-20亿元（同比+10倍）；精灵G2机型毛利率30-35%；2026年目标突破50亿元", "exchange": "未上市（Private），计划港股IPO", "evidence": {"2025年出货5,168台市占率39%全球第一": "Omdia《通用具身机器人市场雷达》报告（2026年1月）", "赛迪口径出货4,000+台市占率23.5%": "赛迪《2025年人形机器人市场研究报告》", "2025年营收约15-20亿元": "证券时报/东方财富报道，综合融资文件披露", "2026年计划港股IPO": "证券时报2026年报道; 同花顺梳理"}, "rating": 5}, {"code": "—", "name": "宇树机器人", "name_en": "Unitree Robotics", "type": "未上市", "role": "人形+四足机器人双线厂商，全球四足机器人累计销量第一（超3.3万台），人形H1/G1主打“低成本高性能”（G1售价9.9万元起），面向科研教育（占收入73.6%）和商业消费场景", "market_share": "官方披露2025年人形机器人出货量超5,500台（不含轮式双臂）；赛迪(CCID)口径市占率32.4%全球第一；Omdia口径4,200台/32%；智元+宇树合计占全球份额71%", "highlight": "2026年6月1日科创板IPO过会（仅73天创“预先审阅机制”最快纪录），拟募资42亿元（48%投向具身智能大模型）；IPO估值约420亿元；毛利率60.1%（2025年），人形机器人毛利率62.9%；创始人王兴兴控制68.78%表决权", "revenue": "2025年约17亿元（+332.6%）；2024年3.93亿元（+146.8%）；2025年归母净利润2.78亿元，扣非净利润5.91亿元；人形机器人收入首超四足，占51.8%", "exchange": "未上市（科创板IPO已过会，代码暂无）", "evidence": {"科创板IPO过会拟募资42亿元": "宇树科技科创板招股书（2026年6月）", "2025年人形出货5,500+台市占率32.4%": "赛迪《2025年人形机器人市场研究报告》", "2025年营收约17亿元净利润2.78亿元": "宇树科技招股书/上交所披露", "毛利率60.1%人形62.9%": "宇树科技招股书财务数据"}, "rating": 5}, {"code": "09880.HK", "name": "优必选", "name_en": "UBTech Robotics", "type": "港股", "role": "全球全尺寸具身智能人形机器人龙头，Walker S系列已量产交付，收入/销量全球第一，已进入汽车制造（比亚迪/奥迪一汽）和航空制造（空中客车）等工业场景", "market_share": "全尺寸具身智能人形机器人收入/销量全球第一（2025年交付1,079台，收入8.2亿元）；人形机器人专利2,985项全球第一", "highlight": "Walker S2支持3分钟自主换电、7×24小时连续作业；工业场景占比超80%；年化产能超6000台，2026年目标万台级；持有现金49.2亿元；毛利率37.7%（全尺寸54.6%）", "revenue": "2025年营收20.01亿元（+53.3%），全尺寸人形机器人收入8.2亿元（+2203.7%），亏损7.9亿元（同比收窄32%）", "exchange": "港交所", "evidence": {"2025年营收20.01亿元（+53.3%）": "优必选2025年年度报告（港交所公告，2026-03-31）", "全尺寸人形机器人交付1,079台收入8.2亿元": "优必选2025年年度报告业务拆分", "全球全尺寸具身智能人形机器人销量/收入第一": "IDC全球人形机器人市场报告/Frost & Sullivan", "空中客车合作": "优必选2025年官方公告/新闻稿"}, "rating": 4}, {"code": "—", "name": "波士顿动力", "name_en": "Boston Dynamics", "type": "未上市", "role": "全球人形机器人技术标杆，2024年发布全电动Atlas（取代液压版），动态运动能力（跑酷/后空翻/自主导航）全球领先，正在现代汽车工厂进行实际部署测试", "market_share": "人形机器人技术制高点——Atlas的动态运动+自主操作能力在复杂地形适应性和全身协调性方面全球公认最强；Spot四足机器人已实现全球商业化", "highlight": "2024年全电动Atlas发布，标志着从液压研究平台向商业产品转型；2025年在现代汽车乔治亚工厂测试零部件搬运等实际任务；Spot已在工业巡检/建筑/公共安全等领域商用；现代汽车2021年以11亿美元收购，提供产业+资本双重支撑", "revenue": "未公开（现代汽车子公司，非独立披露）；2024年公司估值约11亿美元（收购价）", "exchange": "未上市（现代汽车集团子公司，2021年以约11亿美元收购）", "evidence": {"全电动Atlas 2024年发布": "Boston Dynamics 2024年4月官方发布", "现代汽车乔治亚工厂部署": "The Robot Report 2025年报道/波士顿动力官方", "现代汽车11亿美元收购": "Hyundai 2021年6月收购公告"}, "data_note": "技术全球第一梯队，但商业化进度慢于宇树/智元/优必选，Atlas尚无公开售价和对外销售计划", "rating": 4}]}, {"name": "智能驾驶", "name_en": "Autonomous Driving", "description": "物理AI技术应用于高阶自动驾驶系统，构建从仿真训练到实际应用的完整数据闭环", "stocks": [{"code": "002594", "name": "比亚迪", "name_en": "BYD", "type": "A股", "role": "整车+自研智驾双轮驱动，2026年3月GTC大会上英伟达正式宣布比亚迪加入NVIDIA DRIVE Hyperion生态", "market_share": "国内新能源车市占率领先", "highlight": "“天神之眼”智驾系统持续迭代，采用DRIVE AGX Thor芯片+DRIVE Hyperion平台+Omniverse数字孪生，构建仿真训练到实际应用的数据闭环", "revenue": "2024年营收7,771亿元（+29%）", "exchange": "深交所", "evidence": {"加入NVIDIA DRIVE Hyperion生态": "NVIDIA GTC 2026大会公告/比亚迪官方公告", "2024年营收7,771亿元": "比亚迪2024年年度报告"}, "rating": 2}, {"code": "GOOGL", "name": "Waymo", "name_en": "Waymo (Alphabet子公司)", "type": "未上市", "role": "全球自动驾驶技术标杆企业，专注Robotaxi出行服务，运营覆盖美国10个城市，2026年计划扩展至20+城市（含伦敦、东京），同时布局无人配送（DoorDash合作）和自动驾驶卡车", "market_share": "美国自动驾驶出租车市场绝对第一（领先Tesla、Zoox、Cruise）；2026年MAU已达Lyft的6%、Uber的3.3%；2030年目标占美国网约车市场6-10%（J.P. Morgan预测）", "highlight": "2026年2月完成160亿美元融资，估值1,260亿美元（全球自动驾驶史上最大单笔融资）；累计自动驾驶里程超2亿英里；2025年每周订单量45万次，2026年底目标100万次/周；严重伤害事故减少90%（vs.人类驾驶员）", "revenue": "2025年乘车收入约2.7亿美元（约1,500万次付费出行，均价~$18/次）；2026年预测7-8亿美元；亏损严重，2025年亏损约45-56亿美元", "exchange": "未独立上市（Alphabet子公司，代码GOOGL）", "evidence": {"估值1,260亿美元融资160亿美元": "J.P. Morgan首次覆盖Waymo研报（2026年2月）; NBD每日经济新闻报道", "2025年乘车收入约2.7亿美元": "J.P. Morgan研报; NextBigFuture分析", "每周订单45万次": "Waymo官方公告/科技媒体报道", "累计自动驾驶里程超2亿英里": "Waymo官方安全报告"}, "rating": 5}, {"code": "BIDU", "name": "萝卜快跑", "name_en": "Luobo Kuaipao (百度旗下)", "type": "未上市", "role": "百度旗下自动驾驶出行服务平台，中国Robotaxi市场份额第一，覆盖27个国内城市+出海阿联酋/英国；第六代车型RT6单车成本压缩至10万元量级（全球L4级最低）", "market_share": "中国Robotaxi市场绝对领先；累计服务订单超2,000万单（截至2026年2月）全球第一；全无人驾驶累计里程超2.2亿公里；周订单峰值超35万单（2026Q1）", "highlight": "全球首个实现单车UE盈亏平衡的Robotaxi服务——2025年8月武汉确认单车收支平衡；累计研发投入超1,500亿元（10年）；迪拜获“001号”测试牌照；2025年Q4百度AI应用收入27亿元（含萝卜快跑等）；2026年Q1百度AI业务收入136亿元首次过半", "revenue": "百度未单独披露萝卜快跑营收（归入AI应用板块）；2025年Q4百度AI应用收入27亿元；单均收入：武汉9.9公里约8.4元", "exchange": "未独立上市（百度旗下，代码BIDU）", "evidence": {"累计服务订单超2,000万单全球第一": "百度2025年Q4及全年财报", "武汉单车UE盈亏平衡": "百度2025年Q2财报电话会; 李彦宏确认", "RT6单车成本10万元量级": "百度Apollo Day技术发布", "2026年Q1百度AI业务收入136亿元": "百度2026年Q1财报"}, "rating": 5}, {"code": "PONY", "name": "小马智行", "name_en": "Pony.ai", "type": "美股", "role": "唯一实现北上广深四大一线城市全无人商业化运营的Robotaxi公司，采用轻资产「共建车队」模式（与丰田/广汽/北汽合作），国内+海外双引擎扩张", "market_share": "中国Robotaxi市场第一梯队（与萝卜快跑、文远知行并列）；唯一覆盖中国四大一线城市全无人运营", "highlight": "2025年Q4首次单季盈利；广深双城单车UE转正（深圳日均单车净收入338元，日均23单）；车队规模超1400辆（2026年目标3000+）；海外布局6国（韩国/新加坡/克罗地亚已收费运营）；APP注册用户超100万", "revenue": "2025年营收6.29亿元（+20%），Robotaxi收入1.16亿元（+129%）；持有现金105.93亿元", "exchange": "纳斯达克（港股02026.HK）", "evidence": {"2025年Q4首次单季盈利": "小马智行2025年年度报告（SEC Filing）", "深圳日均单车净收入338元": "光大证券/群益证券研报"}, "rating": 4}, {"code": "—", "name": "华为乾昆智驾", "name_en": "Huawei Qiankun ADS", "type": "未上市", "role": "中国智能驾驶供应商绝对龙头，ADS 4业界首个面向高速L3商用的智驾方案，城区领航辅助市占率国内第一", "market_share": "城区领航辅助市占率27.8%国内第一（超第2+第3名之和）；35万以上豪华车型城区领航市占率52.7%", "highlight": "2025年智能汽车业务收入450.18亿元（+72.1%，华为增速最快业务）；累计搭载140万+辆；鸿蒙智行全年交付58.91万辆（同比+32%）；预计2026年高速L3规模商用，城区NCA下沉至15万级车型", "revenue": "2025年华为智能汽车业务收入450.18亿元（+72.1%）", "exchange": "未上市（华为技术有限公司），引望智能已独立运营", "evidence": {"2025年智能汽车业务收入450亿元": "华为2025年年度报告", "城区领航辅助市占率27.8%第一": "汽车公社/第三方机构2025年前三季度统计", "累计搭载140万+辆": "华为乾昆智驾ADS 2025年度数据发布", "2026年高速L3规模商用": "华为乾昆生态大会2026公告"}, "data_note": "华为智能汽车业务2025年1月注入引望智能独立运营，收入口径含零部件+HI模式+智选车", "rating": 5}, {"code": "09660.HK", "name": "地平线机器人", "name_en": "Horizon Robotics", "type": "港股", "role": "中国自动驾驶芯片龙头，征程系列累计出货超400万套，智驾芯片\"一超两强\"格局核心玩家（英伟达+华为+地平线合计占中高阶智驾近90%）", "market_share": "自主品牌基础ADAS市占率47.7%国内第一；20万以内车型中高阶智驾市占率44.2%第一；中高阶智驾整体14.4%第三（与华为15.2%几乎并列）", "highlight": "2025年中高阶芯片出货180万套（+380%），征程6系列贡献产品收入超80%；HSD全场景城区智驾方案将城区NOA带入15万元级（首搭星途ET5，8周交付2.5万套）；下一代Agentic CAR SoC 2026年推出", "revenue": "2025年营收37.6亿元（+57.7%），毛利率64.5%；现金储备超200亿元", "exchange": "港交所", "evidence": {"2025年营收37.6亿元（+57.7%）": "地平线机器人2025年年度报告（港交所公告）", "征程系列出货401万套中高阶180万套": "地平线2025年年度报告业务数据", "基础ADAS市占率47.7%第一": "高工智能汽车/盖世汽车研究院2025年数据", "中高阶智驾14.4%与华为并列": "高工智能汽车/方正证券研报"}, "rating": 5}, {"code": "WRD", "name": "文远知行", "name_en": "WeRide", "type": "美股", "role": "全球唯一同时走L4 Robotaxi+ADAS双路线的自动驾驶公司，Robotaxi出海标杆，覆盖全球12国40+城市", "market_share": "中国Robotaxi第一梯队（与萝卜快跑、小马智行并列）；唯一获中美欧+新加坡全部五地无人驾驶运营资质", "highlight": "2025年营收6.85亿元（+90%），Robotaxi收入1.48亿元（+209.6%）；获Uber 1亿美元战略投资+5年15城扩展计划；中国区单车TCO同比降38%，远程人车比从1:10提升至1:40", "revenue": "2025年营收6.85亿元（+90%），Robotaxi收入1.48亿元（+209.6%）", "exchange": "纳斯达克", "evidence": {"2025年营收6.85亿元（+90%）": "文远知行2025年年度报告（SEC Filing）", "Robotaxi收入1.48亿元（+209.6%）": "文远知行2025年Q4及全年财报", "Uber 1亿美元投资+5年15城": "文远知行2025年官方公告/Uber合作公告", "全球12国40+城市覆盖": "文远知行2025年年度报告"}, "rating": 4}]}, {"name": "工业机器人与物流", "name_en": "Industrial Robot & Logistics", "description": "物理AI在工业物流、智能仓储等场景的商业化应用", "stocks": [{"code": "603611", "name": "诺力股份", "name_en": "Noblelift", "type": "A股", "role": "AI无人叉车属物理AI范畴，AGV机器人融合AI技术，已发布Omega AI智能叉车（搭载自研NobleOne AI平台）", "market_share": "联合浙江大学共建具身智能物流机器人联合实验室，攻关多智能体协同等关键技术", "highlight": "产品已实现商业化落地，物理AI在工业物流场景的核心服务商", "revenue": "2024年营收约82亿元", "exchange": "上交所", "evidence": {"Omega AI智能叉车+NobleOne AI平台": "诺力股份官方产品发布会", "2024年营收约82亿元": "诺力股份2024年年度报告"}, "data_note": "【重大修正】公司2025年5月7日官方明确回复“与英伟达暂无合作”，已删除相关表述", "rating": 2}, {"code": "—", "name": "Agility Robotics", "name_en": "Agility Robotics", "type": "未上市", "role": "全球首个在物流仓库实现商业部署的人形机器人公司，Digit已进入亚马逊、GXO等客户仓库实际运行", "market_share": "仓储物流人形机器人商业化部署领先；自建RoboFab工厂规模化生产", "highlight": "Digit第四代专为物流仓储设计，已迭代至第四代集合客户经验；亚马逊为Digit客户兼投资方", "revenue": "未公开，处于商业化早期；累计融资约1.8亿美元+", "exchange": "未上市（Private）", "evidence": {"Digit在亚马逊仓库运行": "Agility Robotics官方公告/Amazon Robotics合作公告", "累计融资约1.8亿美元": "Crunchbase/PitchBook融资数据", "RoboFab工厂规模化生产": "Agility Robotics 2024年官方公告"}, "rating": 4}]}, {"name": "工业仿真与数字孪生", "name_en": "Industrial Simulation & Digital Twin", "description": "通过数字孪生技术为工业场景提供虚拟训练环境，推动物理AI在智能制造领域的应用", "stocks": [{"code": "837092", "name": "汉鑫科技", "name_en": "Hanxin Technology", "type": "A股", "role": "聚焦AI+工业视觉、数字孪生、车路协同场景，三大业务：智能制造、智能驾驶、智慧城市", "market_share": "华为“工业+AI”核心合作伙伴，服务千余家客户", "highlight": "承建烟台首条“车路云一体化”智能网联示范路；2021年北交所开市全国首批、山东省首家直接首发上市", "revenue": "2024年营收约4.3亿元", "exchange": "北交所", "evidence": {"华为工业+AI核心合作伙伴": "汉鑫科技官方公告/华为合作伙伴名录", "2024年营收约4.3亿元": "汉鑫科技2024年年度报告"}, "rating": 2}, {"code": "002990", "name": "盛视科技", "name_en": "Maxvision Technology", "type": "A股", "role": "长期致力于AI+机器人技术研究，已将智能机器人作为核心战略方向，2025年收购法国NAO人形机器人资产加速布局", "market_share": "智能安检机器人已实现商业化落地，在口岸、机场等场景运行", "highlight": "搭载DeepSeek大模型的服务机器人在西安咸阳机场口岸运行；人脸识别算法NIST-FRTE全球TOP 10", "revenue": "2025年总营收14.45亿元（+18.26%）", "exchange": "深交所", "evidence": {"2025年营收14.45亿元（+18.26%）": "盛视科技2025年年度报告", "收购法国NAO人形机器人资产": "盛视科技2025年收购公告", "NIST-FRTE全球TOP 10": "NIST人脸识别算法评测排名"}, "rating": 3}]}, {"name": "无人机与低空经济", "name_en": "Drones & Low-Altitude Economy", "description": "无人机是飞行机器人，集成了SLAM自主导航、3D避障、目标识别与跟踪等物理AI核心技术，是全球部署量最大的物理AI终端", "stocks": [{"code": "—", "name": "大疆创新", "name_en": "DJI", "type": "未上市", "role": "全球无人机绝对霸主，消费级/农业/行业无人机市占率均超70%，核心技术（飞控/视觉避障/SLAM/图传）构成全球最庞大的物理AI终端生态", "market_share": "全球消费级无人机市占率70%+（连续10年第一）；全球运动相机市占率~66%；美国农业无人机市占率~62%", "highlight": "2025年营收约850-900亿元，净利润~200亿，净利率~25%；Pocket 3累计销量破1000万台；自研Livox激光雷达已用于自动驾驶/机器人感知；海外收入占比~80%；全球数千万台无人机实时运行SLAM+避障等物理AI算法", "revenue": "2025年营收约850-900亿元（非官方披露），净利润超200亿元，净利率~25%", "exchange": "未上市（Private），胡润2025全球独角兽榜估值840亿元", "evidence": {"2025年营收约850-900亿元": "36氪/雷锋网/界面新闻等多家媒体综合估算", "全球消费级无人机市占率70%+": "DroneAnalyst/IDC行业报告", "Pocket 3累计销量破1000万台": "大疆官方/渠道数据综合", "胡润估值840亿元": "胡润《2025全球独角兽榜》"}, "data_note": "非上市公司，财务数据为第三方估算；面临美国制裁风险", "rating": 5}]}, {"name": "家用服务机器人", "name_en": "Consumer Service Robots", "description": "消费级清洁/服务机器人是全球部署量最大的物理AI终端之一，搭载SLAM导航、3D物体识别、自主避障等核心技术，正从\"工具\"向\"管家\"演进", "stocks": [{"code": "688169", "name": "石头科技", "name_en": "Roborock", "type": "A股", "role": "全球智能扫地机器人销量第一（IDC），具身智能布局最激进的消费机器人厂商——5轴仿生机械手+轮足机器人已量产", "market_share": "全球智能扫地机器人市场份额27.0%，销量和销额均全球第一（IDC）；国内线上市占率约33.8%", "highlight": "G30 Space搭载全球首创5轴折叠仿生机械手，从二维清洁升级三维空间操作；G-Rover是全球首款量产轮足扫地机器人（可上下楼梯）；星阵领航3.0系统+RRmind GPT融合DeepSeek大模型；海外收入占比56%", "revenue": "2025年营收约186亿元（+56%），研发投入14.2亿元（+46%），净利润13.6亿元", "exchange": "上交所科创板", "evidence": {"2025年营收约186亿元": "石头科技2025年年度报告", "全球市场份额27.0%第一": "IDC 2025年全球智能清洁机器人市场报告", "G30 Space 5轴仿生机械手": "石头科技2025年产品发布会", "G-Rover轮足机器人": "石头科技2025年产品公告"}, "data_note": "2025年增收不增利（净利润-31%），销售费用翻倍至31.8亿；洗衣机/洗地机/割草机器人新业务短期拖累利润", "rating": 4}, {"code": "603486", "name": "科沃斯", "name_en": "Ecovacs", "type": "A股", "role": "中国扫地机器人连续11年销量第一，沿\"工具→管家→伴侣\"路径向具身智能演进，2026年发布管家机器人\"八界\"", "market_share": "中国扫地机器人线上销量第一（30.4%，连续11年）；全球智能清洁机器人第二（14.3%，IDC）", "highlight": "管家机器人\"八界\"搭载OpenClaw智能体框架，可主动归位、递送物品；AI仿生陪伴机器人\"毛团儿\"；OZMO ROLLER恒压活水洗地技术全球累计销量160万台；海外收入88.5亿（+24.4%）", "revenue": "2025年营收190.40亿元（+15.10%），净利润17.58亿元（+118.13%），毛利率48.82%", "exchange": "上交所", "evidence": {"2025年营收190.40亿元": "科沃斯2025年年度报告", "连续11年国内销量第一": "奥维云网/IDC中国扫地机器人市场数据", "管家机器人八界发布": "科沃斯2026年Q1产品发布会", "全球市场份额14.3%": "IDC 2025年全球智能清洁机器人市场报告"}, "rating": 3}]}]}]};
+const DATA = {"name": "物理AI", "name_en": "Physical AI", "description": "物理AI（Physical AI）是人工智能从虚拟世界迈向实体世界的革命性技术路径，通过融合仿真训练、数字孪生和具身智能，使AI能够理解重力、摩擦、惯性等物理规律，并在真实世界中自主完成复杂任务。预计至2032年全球市场规模将达152.4亿美元，至2040年关联产业规模有望达到3.25万亿美元。", "market_cagr": "47.2%", "market_size_2032": "152.4亿美元", "market_size_2040": "3.25万亿美元", "children": [{"name": "基础设施层", "name_en": "Infrastructure Layer", "subtitle": "算力与仿真底座", "description": "基础设施层是物理AI产业链的基石，提供强大的算力支撑和高保真的仿真环境，确保物理AI模型能够在虚拟世界中“学习百万次”，为实体世界的操作奠定基础。", "children": [{"name": "算力硬件", "name_en": "Computing Hardware", "description": "提供物理AI训练与推理所需的高性能算力基础设施，包括AI服务器、智算中心等", "stocks": [{"code": "601138", "name": "工业富联", "name_en": "Foxconn Industrial Internet", "role": "全球AI服务器制造龙头，英伟达GB200等先进AI服务器主力代工厂", "market_share": "全球AI服务器市占率超40%（约42.3%，IDC数据），英伟达DGX/HGX高端整机代工份额超40%", "highlight": "2025年AI服务器收入同比增长超3倍（>300%）；800G以上高速交换机全球市占率75.8%", "exchange": "上交所", "market": "A股"}, {"code": "603019", "name": "中科曙光", "name_en": "Sugon", "role": "智算基础设施领先企业，子公司曙光数创于2026年4月发布全球首个MW级相变浸没液冷整机柜C8000 V3.0", "market_share": "参与东数西算工程部署超2000P算力集群", "highlight": "液冷方案PUE值低至1.04以下，机房面积节省超85%；曙光数创是国内唯一实现浸没相变液冷大规模商业化部署的企业", "exchange": "上交所", "market": "A股"}]}, {"name": "液冷技术", "name_en": "Liquid Cooling Technology", "description": "为物理AI高功耗算力设备提供精密温控解决方案，解决智算中心散热难题", "stocks": [{"code": "002837", "name": "英维克", "name_en": "Envicool", "role": "英伟达MGX生态合作伙伴，专注AI算力设备精密温控，液冷产品UQD/MQD通过英伟达MGX生态兼容性认证", "market_share": "英伟达MGX生态兼容性认证", "highlight": "智算中心迈入兆瓦级时代，液冷技术成为散热关键", "exchange": "深交所", "market": "A股", "data_note": "【已修正】代码从002802修正为002837；合作关系从“英伟达认证液冷技术龙头”修正为MGX生态合作伙伴；液冷业务营收占比不足8%，非英伟达直接供应商"}]}, {"name": "仿真引擎", "name_en": "Simulation Engine", "description": "提供多物理场CAE仿真能力，为机器人和自动驾驶提供虚拟训练环境", "stocks": [{"code": "688507", "name": "索辰科技", "name_en": "Suochen Technology", "role": "国内CAE仿真软件绝对龙头，A股覆盖学科最全的多物理场CAE仿真软件厂商", "market_share": "2025年CAE软件收入2.84亿元，占总收入61%，毛利率86.33%", "highlight": "自研“天工·开物”物理AI平台，2025年物理AI首次贡献收入5816万元，超额完成股权激励年度目标3000万元", "exchange": "上交所科创板", "market": "A股", "data_note": "【已修正】“唯一”表述改为“覆盖学科最全”；物理AI产品于2025年3月发布，2024年无独立收入基数，原“同比增长240%”已删除"}]}]}, {"name": "模型与平台层", "name_en": "Model & Platform Layer", "subtitle": "物理AI大脑", "description": "模型与平台层是物理AI产业链的“认知中枢”，负责将物理世界的规律融入AI模型，构建VLM（视觉语言模型）、VLA（视觉语言动作模型）和世界模型三大技术路径。", "children": [{"name": "世界模型", "name_en": "World Model", "description": "构建物理世界的数字孪生与仿真模型，为AI提供物理直觉能力", "stocks": [{"code": "06651.HK", "name": "五一视界", "name_en": "51World", "role": "港股“物理AI第一股”，发布全球首款“物理直觉”世界模型51World Model", "market_share": "智驾仿真市占率53.5%（弗若斯特沙利文数据，中国端到端高阶智驾仿真及数据平台市场）", "highlight": "2025年营收3.48亿元同比增长21%；深度配套高阶自动驾驶与人形机器人仿真测试，覆盖全球TOP20车企中的55%", "exchange": "港交所", "market": "港股"}]}, {"name": "VLA/VLM平台", "name_en": "VLA/VLM Platform", "description": "视觉语言动作模型与视觉语言模型平台，实现从感知到动作的转化闭环", "stocks": [{"code": "300825", "name": "阿尔特", "name_en": "IAT Automobile", "role": "英伟达Solution Advisor（顾问级）合作伙伴，基于Omniverse和Isaac Sim平台进行汽车研发与机器人仿真", "market_share": "已落地Apollo RT6、文远小巴等多个L4级自动驾驶项目", "highlight": "将大模型+数字孪生+物理仿真应用于汽车研发、自动驾驶训练；DRIVE芯片合作细节尚未公开披露", "exchange": "深交所创业板", "market": "A股", "data_note": "【已修正】原“深度绑定英伟达”过度渲染，修正为实际合作关系级别；机器人业务仍处早期培育阶段"}, {"code": "002354", "name": "天娱数科", "name_en": "Tianyu Digital", "role": "基于VLA（视觉-语言-动作）模型构建了BehavisionPro具身智能解决方案", "market_share": "落地某车企数字孪生工厂项目", "highlight": "采用英伟达GPU算力及Isaac Sim仿真平台进行物理AI模型训练与数据生成；核心收入仍以数字营销为主（占~99%），物理AI为战略布局方向", "exchange": "深交所", "market": "A股", "data_note": "【已修正】原“国内首个”无法独立验证已删除；“与英伟达合作开发”为夸大表述，实为客户-供应商关系"}]}]}, {"name": "硬件层", "name_en": "Hardware Layer", "subtitle": "感知与执行", "description": "硬件层是连接数字世界与物理世界的桥梁，包含感知系统（“眼睛”与“触觉”）和执行系统（“肌肉”与“关节”），为物理AI提供精确的环境理解与精准的物理操作能力。", "children": [{"name": "感知硬件", "name_en": "Perception Hardware", "description": "为物理AI提供3D视觉感知与动作捕捉能力，实现精确的环境理解", "sub_domains": [{"name": "3D视觉感知", "name_en": "3D Vision Perception", "stocks": [{"code": "688322", "name": "奥比中光", "name_en": "Orbbec", "role": "全球少数掌握六大3D视觉技术的企业（结构光/iToF/双目/dToF/激光雷达/工业三维测量），拥有自主知识产权的深度引擎算法", "market_share": "国内服务机器人市场占有率超70%；韩国商用及工业移动机器人3D视觉市场份额达72%（Interact Analysis）", "highlight": "2025年营收9.41亿元同比增长66.66%，成功扭亏为盈；已进入优必选、智元、天工、乐聚等主流人形机器人供应链", "exchange": "上交所科创板", "market": "A股"}]}, {"name": "动作捕捉", "name_en": "Motion Capture", "stocks": [{"code": "002292", "name": "奥飞娱乐", "name_en": "Alpha Group", "role": "参股国内惯性捕捉龙头诺亦腾（持股约5.12%），布局物理AI感知层", "market_share": "诺亦腾PNLink产品在复杂电磁环境下实现零丢包", "highlight": "诺亦腾动作捕捉系统与英伟达Isaac Sim实现数据联通，为智元机器人、宇树科技等提供遥操作数据采集支持", "exchange": "深交所", "market": "A股", "data_note": "奥飞娱乐主营业务为IP+动漫玩具，与物理AI关联为间接参股诺亦腾5.12%"}, {"code": "688400", "name": "凌云光", "name_en": "LUSTER LightTech", "role": "国内机器视觉龙头，机器视觉行业整体销售额国内第一（CMVU 2021年数据），消费电子可配置视觉系统国产第一", "market_share": "消费电子可配置视觉系统市占率22.4%，国产第一（整体第三，次于康耐视、基恩士）", "highlight": "LCubor系列工业3D相机和Bumblebee系列双目立体视觉系统赋能机器人物理空间感知；OptiTrack/Swift系列提供运动捕捉能力", "exchange": "上交所科创板", "market": "A股", "data_note": "【已修正】原报告将奥比中光的Femto/Gemini产品误归为凌云光产品，已修正为凌云光自有产品线；市占率从“第一”修正为“国产第一”"}]}]}, {"name": "执行硬件", "name_en": "Execution Hardware", "description": "为物理AI提供精准的物理操作能力，包括核心零部件和机器人控制器", "sub_domains": [{"name": "核心零部件", "name_en": "Core Components", "stocks": [{"code": "688017", "name": "绿的谐波", "name_en": "Leaderdrive", "role": "国内首家完全拥有自主知识产权的谐波减速器企业，产品技术达世界前列水准，国产第一", "market_share": "国产减速器市场占有率约30%-40%（摩根大通估计），国产第一", "highlight": "2025年谐波减速器销量42.52万台（同比+72.48%），2026年锚定百万台级产能规划，已进入特斯拉、优必选供应链", "exchange": "上交所科创板", "market": "A股", "data_note": "【已修正】出货量从“接近50万台”修正为精确数据42.52万台；市占率从“超35%”修正为“约30%-40%”"}, {"code": "300124", "name": "汇川技术", "name_en": "Inovance Technology", "role": "工控界“小华为”，伺服系统和高精度运动控制技术领先", "market_share": "国内伺服电机市场占有率第一（约32%，睿工业数据，遥遥领先第二名西门子约9.2%）；低压变频器、SCARA机器人、电梯电控系统也均为国内/全球第一", "highlight": "运动控制技术确保物理AI执行端高精度动作；2025年前三季度营收316.63亿元（+24.67%）", "exchange": "深交所创业板", "market": "A股"}, {"code": "003021", "name": "兆威机电", "name_en": "Zhaowei Machinery", "role": "灵巧手机电领军者，中国首家推出商业化高自由度灵巧手产品，“微小传动系统”获评国家制造业单项冠军产品", "market_share": "2025年营收17.16亿元（+12.52%），灵巧手业务尚处培育期（占营收约0.4%），主业以智能汽车（~55%）、消费电子为主", "highlight": "B20灵巧手（20自由度）已发布，与华为签署合作备忘录；2026年4月投资8亿元建设灵巧手产业园", "exchange": "深交所", "market": "A股"}]}, {"name": "机器人控制器", "name_en": "Robot Controller", "stocks": [{"code": "001339", "name": "智微智能", "name_en": "Zhiwei Intelligent", "role": "AI数智化基座提供商，聚焦具身智能+机器人控制器（工业物联网板块新兴业务）", "market_share": "机器人控制器搭载NVIDIA Isaac平台及Jetson Orin/Thor模组，已有比亚迪、理想汽车等客户订单落地", "highlight": "为英伟达NPN合作伙伴，2025年8月与英伟达全球同步首发智擎EII6300（基于Jetson Thor）；机器人相关收入尚未单独披露", "exchange": "深交所", "market": "A股", "data_note": "机器人控制器业务处于早期放量阶段，传统主业为行业终端（教育/消费PC）和ICT基础设施"}]}]}]}, {"name": "应用层", "name_en": "Application Layer", "subtitle": "场景落地", "description": "应用层是物理AI产业链的最后一环，将技术转化为商业价值，直接面向终端用户，是验证物理AI技术成熟度和推动数据闭环迭代的关键环节。", "children": [{"name": "人形机器人", "name_en": "Humanoid Robot", "description": "人形机器人是物理AI最具代表性的应用场景，已从实验室走向量产爬坡阶段", "stocks": [{"code": "TSLA", "name": "特斯拉", "name_en": "Tesla", "role": "全球人形机器人领军企业，Optimus Gen3于2026年夏季启动量产爬坡", "market_share": "2026年产量指引5-15万台（机构预测实际1-5万台）；弗里蒙特工厂设计年产能远期目标100万台", "highlight": "马斯克目标：量产后单台成本控制在2万美元以内（当前小批量BOM成本约4.3万美元）；采用线性执行器技术路线", "exchange": "纳斯达克", "market": "美股", "data_note": "【已修正】“百万台”系远期设计产能非2026年目标；2万美元为量产目标成本非已实现"}, {"code": "09880.HK", "name": "优必选", "name_en": "UBTECH", "role": "国内人形机器人代表企业，全球人形机器人有效专利数量第一，2025年卖出1079台", "market_share": "2025年人形机器人收入8.2亿元，占总营收41.1%；奥比中光（3D视觉传感器核心供应商、单台Walker价值约8000元）、绿的谐波（减速器）等供应链深度合作", "highlight": "Walker系列已进入多家车厂实训；与诺亦腾合作暂无法公开核实", "exchange": "港交所", "market": "港股", "data_note": "【已修正】代码从9880.HK修正为09880.HK（港交所官方5位代码）"}]}, {"name": "智能驾驶", "name_en": "Autonomous Driving", "description": "物理AI技术应用于高阶自动驾驶系统，构建从仿真训练到实际应用的完整数据闭环", "stocks": [{"code": "002594", "name": "比亚迪", "name_en": "BYD", "role": "整车+自研智驾双轮驱动，2026年3月GTC大会上英伟达正式宣布比亚迪加入NVIDIA DRIVE Hyperion生态", "market_share": "国内新能源车市占率领先", "highlight": "“天神之眼”智驾系统持续迭代，采用DRIVE AGX Thor芯片+DRIVE Hyperion平台+Omniverse数字孪生，构建仿真训练到实际应用的数据闭环", "exchange": "深交所", "market": "A股"}, {"code": "09866.HK", "name": "蔚来", "name_en": "NIO", "role": "智能驾驶领域代表企业，高端智能电动车，三地上市（港股09866/美股NIO/新交所NIO）", "market_share": "国内高端智能电动车市场重要参与者", "highlight": "自研神玑芯片（NX9031，算力1000 TOPS）及NIO WorldModel，将物理AI技术应用于自动驾驶系统", "exchange": "港交所（美股NYSE: NIO）", "market": "港股/美股", "data_note": "【已修正】原代码NIO为美股代码，补充港股代码09866.HK"}, {"code": "2015.HK", "name": "理想汽车", "name_en": "Li Auto", "role": "智能驾驶领域代表企业，2024年底宣布“All in AI”，2025年OTA 8.0全量推送VLA司机大模型", "market_share": "国内新势力销量领先", "highlight": "CEO李想表示自动驾驶只是物理AI的起点；实现从规则算法→端到端+VLM→VLA（视觉语言行动模型）的技术演进，VLA强化学习阶段依赖世界模型闭环训练", "exchange": "港交所", "market": "港股"}]}, {"name": "工业机器人与物流", "name_en": "Industrial Robot & Logistics", "description": "物理AI在工业物流、智能仓储等场景的商业化应用", "stocks": [{"code": "603611", "name": "诺力股份", "name_en": "Noblelift", "role": "AI无人叉车属物理AI范畴，AGV机器人融合AI技术，已发布Omega AI智能叉车（搭载自研NobleOne AI平台）", "market_share": "联合浙江大学共建具身智能物流机器人联合实验室，攻关多智能体协同等关键技术", "highlight": "产品已实现商业化落地，物理AI在工业物流场景的核心服务商", "exchange": "上交所", "market": "A股", "data_note": "【重大修正】公司2025年5月7日官方明确回复“与英伟达暂无合作”，已删除相关表述"}, {"code": "002611", "name": "东方精工", "name_en": "Dongfang Precision", "role": "主营智能瓦楞纸包装装备（占营收64.67%）；参股嘉腾机器人19.84%股权（第二大股东，未并表）", "market_share": "参股公司嘉腾机器人为英伟达生成式AI生态伙伴，生成式AI在激光叉车上成功落地", "highlight": "物理AI关联通过参股公司嘉腾机器人实现；东方精工自身与英伟达无直接合作，公司公告澄清“未实质参与嘉腾机器人经营管理”", "exchange": "深交所", "market": "A股", "data_note": "【已修正】明确区分东方精工主业（包装装备）与其参股公司嘉腾机器人；英伟达合作方为嘉腾，非东方精工自身"}]}, {"name": "工业仿真与数字孪生", "name_en": "Industrial Simulation & Digital Twin", "description": "通过数字孪生技术为工业场景提供虚拟训练环境，推动物理AI在智能制造领域的应用", "stocks": [{"code": "837092", "name": "汉鑫科技", "name_en": "Hanxin Technology", "role": "聚焦AI+工业视觉、数字孪生、车路协同场景，三大业务：智能制造（AI+工业视觉/数字工厂）、智能驾驶（车路协同）、智慧城市", "market_share": "物理AI在工业/交通场景的核心落地服务商；华为“工业+AI”核心合作伙伴，服务千余家客户", "highlight": "承建烟台首条“车路云一体化”智能网联示范路；2021年北交所开市全国首批、山东省首家直接首发上市", "exchange": "北交所", "market": "A股"}, {"code": "002990", "name": "盛视科技", "name_en": "Maxvision Technology", "role": "长期致力于AI+机器人技术研究，已将智能机器人作为核心战略方向，2025年收购法国NAO人形机器人资产加速布局", "market_share": "智能安检机器人已实现商业化落地，在口岸、机场等场景运行；2025年总营收14.45亿元（同比+18.26%）", "highlight": "搭载DeepSeek大模型的服务机器人在西安咸阳机场口岸运行；海关“数智关员”AI智能体在深圳海关试点上线；人脸识别算法NIST-FRTE全球TOP 10", "exchange": "深交所", "market": "A股"}]}]}], "_meta": {"source": "物理AI产业链图 (2026/6/3)", "verification": "4个sub-agent对全部23只股票进行了交叉验证，发现并修正了9项重大错误", "major_corrections": ["英维克股票代码: 002802→002837; 英伟达合作从'认证龙头'降级为MGX生态合作伙伴", "凌云光: Femto/Gemini产品属于奥比中光非凌云光; 市占率从'第一'修正为'国产第一'", "绿的谐波: 出货量从'接近50万'修正为42.52万台; 市占率从'超35%'修正为'约30-40%'", "特斯拉: '百万台产能'和'2万美元以下成本'修正为远期目标", "优必选代码: 9880.HK→09880.HK; 蔚来补充港股代码09866.HK; 五一视界→06651.HK", "诺力股份: 删除'与英伟达合作'（公司官方否认）", "天娱数科: 删除'国内首个'和'与英伟达合作开发'等夸大表述", "阿尔特: 从'深度绑定英伟达'修正为'Solution Advisor顾问级合作伙伴'", "索辰科技: 删除无效的'同比增长240%'表述（2024年无收入基数）"], "verification_date": "2026-06-05"}};
 
-/* ── 颜色配置 ── */
-const COLORS = {
-    root:       '#a78bfa',
-    layer:      ['#4fc3f7', '#ffb74d', '#81c784', '#e57373'],
-    domain:     '#90a4ae',
-    subdomain:  '#78909c',
-    stock:      '#ffcc80'
-};
+const LAYER_COLORS = ['#4fc3f7', '#ffb74d', '#81c784', '#e57373'];
+const LAYER_COLORS_LIGHT = ['#b3e5fc', '#ffe0b2', '#c8e6c9', '#ffcdd2'];
 
-/* ── 递归构建 ECharts tree 数据 ── */
-function buildTree(data) {
-    const root = {
-        name: data.name,
-        value: formatRootValue(data),
-        itemStyle: {
-            color: COLORS.root,
-            borderColor: '#c4b5fd',
-            borderWidth: 3,
-            shadowBlur: 18,
-            shadowColor: 'rgba(167,139,250,0.5)'
-        },
-        lineStyle: { color: 'rgba(167,139,250,0.35)', width: 2 },
-        label: { fontSize: 16, fontWeight: 700, color: '#e8e0ff' },
-        _meta: {
-            type: 'root',
-            desc: data.description || '',
-            market_cagr: data.market_cagr || '',
-            market_size_2032: data.market_size_2032 || '',
-            market_size_2040: data.market_size_2040 || ''
-        },
-        children: []
-    };
+function buildGraph(data) {
+    const nodes = [];
+    const links = [];
+    const categories = [
+        { name: '物理AI', itemStyle: { color: '#a78bfa' } },
+        { name: '基础设施层', itemStyle: { color: '#4fc3f7' } },
+        { name: '模型与平台层', itemStyle: { color: '#ffb74d' } },
+        { name: '硬件层', itemStyle: { color: '#81c784' } },
+        { name: '应用层', itemStyle: { color: '#e57373' } },
+        { name: '领域', itemStyle: { color: '#90a4ae' } },
+        { name: '股票', itemStyle: { color: '#ffcc80' } }
+    ];
 
-    (data.children || []).forEach((layer, li) => {
-        const layerColor = COLORS.layer[li] || COLORS.layer[0];
-        const layerNode = {
-            name: layer.name,
-            value: layer.subtitle || '',
-            itemStyle: {
-                color: layerColor,
-                borderColor: layerColor,
-                borderWidth: 2,
-                shadowBlur: 12,
-                shadowColor: layerColor + '66'
-            },
-            lineStyle: { color: layerColor + '40', width: 1.5 },
-            label: { fontSize: 14, fontWeight: 600, color: layerColor },
-            _meta: {
-                type: 'layer',
-                desc: layer.description || '',
-                subtitle: layer.subtitle || ''
-            },
-            children: []
-        };
+    function addNode(id, name, cat, extra = {}) {
+        nodes.push({ id, name, category: cat, ...extra });
+    }
 
-        (layer.children || []).forEach((domain, di) => {
-            if (domain.sub_domains) {
-                /* 硬件层：domain → sub_domains → stocks */
-                const domainNode = {
-                    name: domain.name,
-                    value: '',
-                    itemStyle: { color: COLORS.domain, borderColor: COLORS.domain, borderWidth: 1.5 },
-                    lineStyle: { color: COLORS.domain + '30', width: 1 },
-                    label: { fontSize: 12, color: '#b0bec5' },
-                    _meta: { type: 'domain', desc: domain.description || '' },
-                    children: []
-                };
+    function addLink(source, target) {
+        links.push({ source, target });
+    }
 
-                (domain.sub_domains || []).forEach((sub, si) => {
-                    const subNode = {
-                        name: sub.name,
-                        value: '',
-                        itemStyle: { color: COLORS.subdomain, borderColor: COLORS.subdomain, borderWidth: 1 },
-                        lineStyle: { color: COLORS.subdomain + '25', width: 1 },
-                        label: { fontSize: 11, color: '#90a4ae' },
-                        _meta: { type: 'subdomain', desc: '' },
-                        children: (sub.stocks || []).map(stock => makeStockNode(stock))
-                    };
-                    domainNode.children.push(subNode);
-                });
-
-                layerNode.children.push(domainNode);
-            } else if (domain.stocks) {
-                /* 其他层：domain → stocks */
-                const domainNode = {
-                    name: domain.name,
-                    value: '',
-                    itemStyle: { color: COLORS.domain, borderColor: COLORS.domain, borderWidth: 1.5 },
-                    lineStyle: { color: COLORS.domain + '30', width: 1 },
-                    label: { fontSize: 12, color: '#b0bec5' },
-                    _meta: { type: 'domain', desc: domain.description || '' },
-                    children: (domain.stocks || []).map(stock => makeStockNode(stock))
-                };
-                layerNode.children.push(domainNode);
-            }
-        });
-
-        root.children.push(layerNode);
+    // Root
+    const rootId = 'root';
+    addNode(rootId, data.name, 0, {
+        symbolSize: 60,
+        desc: data.description,
+        market_cagr: data.market_cagr,
+        market_size_2032: data.market_size_2032,
+        market_size_2040: data.market_size_2040,
+        itemStyle: { color: '#a78bfa', borderColor: '#c4b5fd', borderWidth: 3 }
     });
 
-    return root;
+    data.children.forEach((layer, li) => {
+        const layerId = `layer_${li}`;
+        const layerCat = li + 1;
+        addNode(layerId, layer.name, layerCat, {
+            symbolSize: 40,
+            desc: layer.description,
+            subtitle: layer.subtitle,
+            itemStyle: { borderColor: LAYER_COLORS[li], borderWidth: 2 }
+        });
+        addLink(rootId, layerId);
+
+        layer.children.forEach((domain, di) => {
+            const domainId = `domain_${li}_${di}`;
+            let domainDesc = domain.description || '';
+
+            // Handle sub_domains (for 硬件层)
+            if (domain.sub_domains) {
+                addNode(domainId, domain.name, 5, {
+                    symbolSize: 30,
+                    desc: domainDesc,
+                    itemStyle: { borderColor: LAYER_COLORS_LIGHT[li], borderWidth: 1.5 }
+                });
+                addLink(layerId, domainId);
+
+                domain.sub_domains.forEach((sub, si) => {
+                    const subId = `subdomain_${li}_${di}_${si}`;
+                    addNode(subId, sub.name, 5, {
+                        symbolSize: 22,
+                        desc: '',
+                        itemStyle: { borderColor: LAYER_COLORS_LIGHT[li], borderWidth: 1 }
+                    });
+                    addLink(domainId, subId);
+
+                    if (sub.stocks) {
+                        sub.stocks.forEach((stock, sti) => {
+                            const stockId = `stock_${li}_${di}_${si}_${sti}`;
+                            addNode(stockId, stock.name, 6, {
+                                symbolSize: 16,
+                                desc: `${stock.role || ''}`,
+                                code: stock.code,
+                                market_share: stock.market_share || '',
+                                highlight: stock.highlight || '',
+                                market: stock.market || '',
+                                exchange: stock.exchange || '',
+                                itemStyle: { color: '#ffe0b2', borderColor: '#ffcc80', borderWidth: 1 }
+                            });
+                            addLink(subId, stockId);
+                        });
+                    }
+                });
+            } else if (domain.stocks) {
+                addNode(domainId, domain.name, 5, {
+                    symbolSize: 28,
+                    desc: domainDesc,
+                    itemStyle: { borderColor: LAYER_COLORS_LIGHT[li], borderWidth: 1.5 }
+                });
+                addLink(layerId, domainId);
+
+                domain.stocks.forEach((stock, sti) => {
+                    const stockId = `stock_${li}_${di}_${sti}`;
+                    addNode(stockId, stock.name, 6, {
+                        symbolSize: 16,
+                        desc: `${stock.role || ''}`,
+                        code: stock.code,
+                        market_share: stock.market_share || '',
+                        highlight: stock.highlight || '',
+                        market: stock.market || '',
+                        exchange: stock.exchange || '',
+                        itemStyle: { color: '#ffe0b2', borderColor: '#ffcc80', borderWidth: 1 }
+                    });
+                    addLink(domainId, stockId);
+                });
+            }
+        });
+    });
+
+    return { nodes, links, categories };
 }
 
-function ratingStars(r) { return '★'.repeat(r); }
+const graph = buildGraph(DATA);
 
-function makeStockNode(stock) {
-    const r = stock.rating || 0;
-    const starStr = r ? '  ' + ratingStars(r) : '';
-    const rColor = r >= 5 ? '#ffb74d' : r >= 4 ? '#ffcc80' : r >= 3 ? '#ffe0b2' : '#bcaaa4';
-    return {
-        name: stock.name,
-        value: stock.code || '',
-        itemStyle: {
-            color: rColor,
-            borderColor: r >= 4 ? '#ffe0b2' : '#bcaaa4',
-            borderWidth: r >= 4 ? 1.5 : 1,
-            shadowBlur: r >= 4 ? 8 : 3,
-            shadowColor: 'rgba(255,204,128,' + (r >= 5 ? '0.5' : r >= 4 ? '0.3' : '0.15') + ')'
-        },
-        lineStyle: { color: COLORS.stock + '25', width: 1 },
-        label: { fontSize: 10, color: '#d7ccc8', formatter: stock.name + starStr },
-        _meta: {
-            type: 'stock',
-            code: stock.code || '',
-            type_: stock.type || '',
-            exchange: stock.exchange || '',
-            role: stock.role || '',
-            market_share: stock.market_share || '',
-            highlight: stock.highlight || '',
-            revenue: stock.revenue || '',
-            rating: r
-        }
-    };
-}
-
-function formatRootValue(data) {
-    const parts = [];
-    if (data.market_cagr) parts.push('CAGR ' + data.market_cagr);
-    if (data.market_size_2032) parts.push('2032: ' + data.market_size_2032);
-    return parts.join(' | ');
-}
-
-/* ── 构建树 ── */
-const treeData = buildTree(DATA);
-
-/* ── 初始化图表 ── */
 const chart = echarts.init(document.getElementById('main'));
 
 const option = {
     tooltip: {
         trigger: 'item',
-        triggerOn: 'mousemove',
-        formatter: function(params) {
-            const d = params.data;
-            const meta = d._meta || {};
-            const type = meta.type;
-
-            if (type === 'root') {
-                return '<div style="font-size:15px;font-weight:700;color:#a78bfa;margin-bottom:6px;">' + d.name + '</div>'
-                     + '<div style="color:#8899aa;font-size:12px;margin-bottom:4px;">Physical AI</div>'
-                     + (meta.desc ? '<div style="color:#b0bec5;font-size:12px;line-height:1.5;max-width:280px;">' + meta.desc + '</div>' : '')
-                     + '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">'
-                     + (meta.market_cagr ? '<span style="background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);border-radius:4px;padding:3px 8px;font-size:11px;color:#c4b5fd;">📈 ' + meta.market_cagr + '</span>' : '')
-                     + (meta.market_size_2032 ? '<span style="background:rgba(79,195,247,0.15);border:1px solid rgba(79,195,247,0.3);border-radius:4px;padding:3px 8px;font-size:11px;color:#4fc3f7;">🎯 ' + meta.market_size_2032 + '</span>' : '')
-                     + (meta.market_size_2040 ? '<span style="background:rgba(255,183,77,0.15);border:1px solid rgba(255,183,77,0.3);border-radius:4px;padding:3px 8px;font-size:11px;color:#ffb74d;">🚀 ' + meta.market_size_2040 + '</span>' : '')
-                     + '</div>';
+        formatter: function(p) {
+            if (p.data.category === 0) {
+                return `<b>${p.name}</b><br/>物理AI (Physical AI)<br/>
+                        年复合增速: ${p.data.market_cagr || ''}<br/>
+                        2032年市场: ${p.data.market_size_2032 || ''}<br/>
+                        2040年市场: ${p.data.market_size_2040 || ''}`;
             }
-
-            if (type === 'layer') {
-                return '<div style="font-size:14px;font-weight:600;color:' + (d.itemStyle.color || '#fff') + ';margin-bottom:4px;">' + d.name + '</div>'
-                     + (meta.subtitle ? '<div style="color:#778899;font-size:11px;margin-bottom:4px;">' + meta.subtitle + '</div>' : '')
-                     + (meta.desc ? '<div style="color:#b0bec5;font-size:12px;line-height:1.5;max-width:260px;">' + meta.desc.substring(0, 150) + (meta.desc.length > 150 ? '...' : '') + '</div>' : '');
+            if (p.data.category >= 1 && p.data.category <= 4) {
+                let t = `<b>${p.name}</b>`;
+                if (p.data.subtitle) t += `<br/>${p.data.subtitle}`;
+                if (p.data.desc) t += `<br/>${p.data.desc.substring(0, 120)}...`;
+                return t;
             }
-
-            if (type === 'domain' || type === 'subdomain') {
-                let html = '<div style="font-size:13px;font-weight:600;color:#b0bec5;margin-bottom:4px;">' + d.name + '</div>';
-                if (meta.desc) html += '<div style="color:#90a4ae;font-size:12px;line-height:1.4;max-width:240px;">' + meta.desc + '</div>';
-                return html;
+            if (p.data.category === 5) {
+                return `<b>${p.name}</b>${p.data.desc ? '<br/>' + p.data.desc : ''}`;
             }
-
-            if (type === 'stock') {
-                const stars = meta.rating ? ratingStars(meta.rating) : '';
-                let html = '<div style="font-size:13px;font-weight:600;color:#ffcc80;margin-bottom:4px;">' + d.name + ' ' + stars + '</div>';
-                if (meta.code) html += '<div style="color:#8899aa;font-family:monospace;font-size:12px;margin-bottom:4px;">' + meta.code + (meta.exchange ? ' · ' + meta.exchange : '') + (meta.type_ ? ' · ' + meta.type_ : '') + '</div>';
-                if (meta.role) html += '<div style="color:#b0bec5;font-size:12px;margin-bottom:3px;">' + meta.role + '</div>';
-                if (meta.revenue) html += '<div style="color:#81c784;font-size:12px;margin-bottom:3px;">💰 ' + meta.revenue + '</div>';
-                if (meta.market_share) html += '<div style="color:#4fc3f7;font-size:12px;">📊 ' + meta.market_share + '</div>';
-                if (meta.highlight) html += '<div style="color:#ffb74d;font-size:12px;">🔸 ' + meta.highlight + '</div>';
-                return html;
+            if (p.data.category === 6) {
+                let t = `<b>${p.name}</b>`;
+                if (p.data.code) t += ` <span style="color:#aaa;font-family:monospace;">${p.data.code}</span>`;
+                if (p.data.market) t += ` (${p.data.market})`;
+                if (p.data.role) t += `<br/>${p.data.role}`;
+                if (p.data.market_share) t += `<br/>📊 ${p.data.market_share}`;
+                if (p.data.highlight) t += `<br/>⭐ ${p.data.highlight}`;
+                return t;
             }
-
-            return d.name;
+            return p.name;
         },
-        backgroundColor: 'rgba(8, 10, 28, 0.95)',
-        borderColor: 'rgba(100, 180, 255, 0.3)',
-        borderWidth: 1,
-        padding: [12, 16],
-        textStyle: { color: '#e0e0e0', fontSize: 13 },
-        extraCssText: 'border-radius:8px;backdrop-filter:blur(6px);box-shadow:0 4px 20px rgba(0,0,0,0.5);'
+        backgroundColor: 'rgba(10, 10, 30, 0.95)',
+        borderColor: 'rgba(100, 180, 255, 0.4)',
+        textStyle: { color: '#e0e0e0', fontSize: 13 }
     },
-
+    legend: { show: false },
     series: [{
-        type: 'tree',
-        data: [treeData],
-
-        /* 布局配置 */
-        layout: 'orthogonal',
-        orient: 'LR',
-        edgeShape: 'polyline',
-        edgeForkPosition: '63%',
-
-        /* 根节点位置 */
-        top: '8%',
-        bottom: '12%',
-        left: '12%',
-        right: '22%',
-
-        /* 交互 */
+        type: 'graph',
+        layout: 'force',
         roam: true,
-        zoom: 0.9,
-
-        /* 初始展开层级（2层：根+4个层） */
-        initialTreeDepth: 2,
-
-        /* 标签 */
+        draggable: true,
+        categories: graph.categories,
+        data: graph.nodes,
+        links: graph.links,
+        force: {
+            repulsion: 800,
+            gravity: 0.08,
+            edgeLength: [100, 280],
+            layoutAnimation: true,
+            friction: 0.6
+        },
+        emphasis: {
+            focus: 'adjacency',
+            lineStyle: { width: 3 },
+            itemStyle: { shadowBlur: 20, shadowColor: 'rgba(100,180,255,0.6)' }
+        },
+        blur: {
+            itemStyle: { opacity: 0.2 },
+            lineStyle: { opacity: 0.1 }
+        },
+        lineStyle: {
+            color: 'rgba(100, 180, 255, 0.15)',
+            curveness: 0.2
+        },
         label: {
             show: true,
             position: 'right',
-            verticalAlign: 'middle',
-            align: 'left',
             fontSize: 12,
             color: '#c0ccd8',
-            distance: 8,
-            formatter: function(params) {
-                const meta = params.data._meta || {};
-                if (meta.type === 'stock' && meta.code) {
-                    const stars = meta.rating ? ratingStars(meta.rating) : '';
-                    return params.name + '  {' + params.dataIndex + 'code|' + meta.code + '}' + '  {' + params.dataIndex + 'stars|' + stars + '}';
+            formatter: function(p) {
+                if (p.data.category <= 4) return p.name;
+                if (p.data.category === 5) return p.name;
+                if (p.data.category === 6) {
+                    const code = p.data.code || '';
+                    return `${p.name}
+{code|${code}}`;
                 }
-                return params.name;
+                return p.name;
             },
             rich: {
-                code: {
-                    fontSize: 9,
-                    color: '#667788',
-                    fontFamily: 'monospace',
-                    padding: [0, 0, 0, 4]
-                },
-                stars: {
-                    fontSize: 8,
-                    color: '#ffb74d',
-                    padding: [0, 0, 0, 2]
-                }
+                code: { fontSize: 10, color: '#8899aa', fontFamily: 'monospace' }
             }
         },
-
-        /* 叶子节点标签 */
-        leaves: {
-            label: {
-                position: 'right',
-                verticalAlign: 'middle',
-                align: 'left'
-            }
+        itemStyle: {
+            borderWidth: 1,
+            borderColor: 'rgba(255,255,255,0.3)'
         },
-
-        /* 连线样式 */
-        lineStyle: {
-            color: 'rgba(100, 180, 255, 0.12)',
-            width: 1.5,
-            curveness: 0.5
-        },
-
-        /* 选中/高亮 */
-        emphasis: {
-            focus: 'descendant',
-            itemStyle: {
-                shadowBlur: 20,
-                shadowColor: 'rgba(100,180,255,0.5)'
-            },
-            lineStyle: {
-                width: 2.5
-            }
-        },
-
-        blur: {
-            itemStyle: { opacity: 0.25 },
-            lineStyle: { opacity: 0.08 }
-        },
-
-        /* 展开/折叠动画 */
-        expandAndCollapse: true,
-        animationDuration: 550,
-        animationDurationUpdate: 750,
-        animationEasingUpdate: 'quinticInOut'
+        scaleLimit: { min: 0.3, max: 3 }
     }]
 };
 
 chart.setOption(option);
 
-/* ── 响应式 ── */
+// Click to zoom and show detail
+chart.on('click', function(params) {
+    if (params.data.category >= 5) {
+        // Zoom into node
+        chart.dispatchAction({
+            type: 'highlight',
+            seriesIndex: 0,
+            dataIndex: params.dataIndex
+        });
+    }
+});
+
+// Responsive
 window.addEventListener('resize', function() {
     chart.resize();
 });
 
-/* ── 3秒后自动展开到第3层，让用户看到更多内容 ── */
-setTimeout(function() {
-    chart.setOption({
-        series: [{
-            initialTreeDepth: 3
-        }]
-    });
-}, 2500);
+// Auto-center after layout stabilizes
+setTimeout(() => {
+    chart.dispatchAction({ type: 'restore' });
+}, 1500);
 </script>
 </body>
 </html>
