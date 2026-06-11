@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>物理AI产业链知识图谱</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(160deg, #060612 0%, #0b1628 40%, #0d0f20 100%);
+    color: #e0e0e0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+#main { width: 100vw; }
+
+/* 顶部标题 */
+#title-area {
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    z-index: 10;
+    pointer-events: none;
+}
+#title-area h1 {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, #4fc3f7 0%, #a78bfa 50%, #ffb74d 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+}
+#title-area .subtitle {
+    font-size: 12px;
+    color: #556677;
+    letter-spacing: 1px;
+}
+
+/* 图例 */
+#legend {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 24px;
+    background: rgba(8, 10, 28, 0.88);
+    border: 1px solid rgba(100, 180, 255, 0.15);
+    border-radius: 10px;
+    padding: 12px 28px;
+    z-index: 10;
+    backdrop-filter: blur(8px);
+}
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #99aabb;
+}
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 6px currentColor;
+}
+
+/* 操作提示 */
+#hint {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: #445566;
+    z-index: 10;
+    pointer-events: none;
+    animation: fadeHint 4s ease-out forwards;
+}
+@keyframes fadeHint {
+    0%, 60% { opacity: 1; }
+    100% { opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<div id="title-area">
+    <h1>物理AI产业链知识图谱</h1>
+    <div class="subtitle">Physical AI Industry Chain &mdash; Tree View</div>
+</div>
+
+<div id="hint">滚轮缩放 · 拖拽平移 · 点击节点展开/折叠</div>
+
+<div id="legend">
+    <div class="legend-item"><span class="legend-dot" style="background:#a78bfa; color:#a78bfa;"></span>物理AI</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#4fc3f7; color:#4fc3f7;"></span>基础设施层</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#ffb74d; color:#ffb74d;"></span>模型与平台层</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#81c784; color:#81c784;"></span>硬件层</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#e57373; color:#e57373;"></span>应用层</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#90a4ae; color:#90a4ae;"></span>领域</div>
+    <div class="legend-item"><span class="legend-dot" style="background:#ffcc80; color:#ffcc80;"></span>股票</div>
+</div>
+
+<div id="main"></div>
+
+<script>
+const DATA = {"name": "物理AI", "name_en": "Physical AI", "description": "物理AI（Physical AI）是人工智能从虚拟世界迈向实体世界的革命性技术路径，通过融合仿真训练、数字孪生和具身智能，使AI能够理解重力、摩擦、惯性等物理规律，并在真实世界中自主完成复杂任务。预计至2032年全球市场规模将达152.4亿美元，至2040年关联产业规模有望达到3.25万亿美元。", "market_cagr": "47.2%", "market_size_2032": "152.4亿美元", "market_size_2040": "3.25万亿美元", "children": [{"name": "基础设施层", "name_en": "Infrastructure Layer", "subtitle": "算力与仿真底座", "description": "基础设施层是物理AI产业链的基石，提供强大的算力支撑和高保真的仿真环境，确保物理AI模型能够在虚拟世界中“学习百万次”，为实体世界的操作奠定基础。", "children": [{"name": "算力硬件", "name_en": "Computing Hardware", "description": "提供物理AI训练与推理所需的高性能算力基础设施。当前AI芯片分化为通用GPU与ASIC定制芯片两大技术路线：GPU凭借可编程灵活性适配多元场景，ASIC以专用架构实现极致能效——实测华为昇腾950/寒武纪思元690 token生成量对比英伟达H20高出50%-150%。国产厂商同步自研软件栈（CANN/MUSA/MXMACA），从根源跳出CUDA生态束缚", "stocks": [{"code": "601138", "name": "工业富联", "name_en": "Foxconn Industrial Internet", "type": "A股", "role": "全球AI服务器制造龙头，英伟达GB200等先进AI服务器主力代工厂", "market_share": "全球AI服务器市占率约42.3%（IDC数据），英伟达DGX/HGX高端整机代工份额超40%，全球AI服务器制造龙头", "highlight": "2025年AI服务器收入同比增长超3倍（>300%）；800G以上高速交换机全球市占率75.8%", "revenue": "2025年营收9,028.87亿元（+48.22%），其中云计算6,026.79亿元（+88.70%）；AI服务器收入同比+300%+", "exchange": "上交所", "evidence": {"2025年营收9,028.87亿元（+48.22%）": "工业富联2025年年度报告摘要（巨潮资讯, 2026-03-11）", "云计算营收6,026.79亿元（+88.70%）": "工业富联2025年年度报告摘要", "AI服务器市占率约42.3%": "IDC 2025全球AI服务器市场追踪报告", "AI服务器收入同比增长超3倍": "工业富联2025年年度报告摘要", "800G交换机市占率75.8%": "Dell'Oro Group 2025报告"}, "rating": 4, "is_leader": true}], "competition_status": "双路线并行（通用GPU与ASIC无优劣之分——场景决定选型）：具备自研团队、AI业务固定的大型企业选用ASIC收获更高性价比；兼顾多类型AI开发/渲染/计算混合负载的项目依赖GPU灵活性。国内商用市场ASIC凭借成本+能效优势占主流——摩根士丹利预测2026年华为昇腾62%/寒武纪14%/百度5%/阿里5%，国产ASIC稳定支撑DeepSeek/阿里等本土大模型落地", "sub_domains": [{"name": "通用GPU", "name_en": "General-purpose GPU", "description": "通用GPU基于多核心并行运算架构，可编程核心优势使其能灵活适配持续迭代的大模型结构，是AI训练与推理最通用的算力方案。硬件架构固定前提下，研发人员可反复改写配套软件代码适配新模型——这也是英伟达CUDA生态长期垄断的关键。国产\"GPU芯片四小龙\"（摩尔线程、壁仞科技、燧原科技、天数智芯）对标英伟达通用路线，同步自研配套软件生态（MUSA/MXMACA等），但软件生态成熟度需漫长周期打磨，商业化落地进度相对迟缓", "stocks": [{"code": "NVDA", "name": "英伟达", "name_en": "NVIDIA", "type": "美股", "role": "物理AI算力基础设施绝对霸主，提供从训练芯片（Blackwell架构）、仿真平台（Omniverse/Isaac Sim）到边缘推理（Jetson Orin/Thor）的全栈解决方案", "market_share": "全球AI训练加速器市占率约90%+；数据中心GPU市占率约88%（IDC/Gartner 2025估计）；2025年中国AI加速卡出货量市占率55%（IDC），但销售额份额已被华为追平（各~40%，Bernstein Research）", "highlight": "FY2026总营收2,159.4亿美元（+65% YoY），数据中心营收1,937.4亿美元；Omniverse为物理AI数字孪生核心平台，Isaac Sim/Drive Sim分别为机器人和自动驾驶仿真训练平台；CUDA生态构成算力护城河", "revenue": "FY2026（截至2026年1月）总营收2,159.4亿美元（+65%），其中数据中心1,937.4亿美元（+68%）", "exchange": "纳斯达克", "evidence": {"FY2026总营收2,159.4亿美元": "NVIDIA FY2026 10-K Filing (SEC CIK 0001045810, 2026-02-25), Table 55", "数据中心营收1,937.4亿美元": "NVIDIA FY2026 10-K, Net Revenue by End Market", "Blackwell架构为数据中心收入主体": "NVIDIA FY2026 10-K: 'Blackwell architectures represented the majority of our Data Center revenue'", "Omniverse for Physical AI": "NVIDIA FY2026 10-K: 'Omniverse for physical AI applications'", "AI训练加速器市占率约90%": "Gartner 2025全球AI加速器市场报告; IDC 2025估计"}, "rating": 5, "is_leader": true}, {"code": "AMD", "name": "AMD", "name_en": "Advanced Micro Devices", "type": "美股", "role": "全球第二大GPU厂商，MI300X系列AI加速器性能对标H100，2026年预测中国市场份额将从4%飙升至12%（Bernstein Research），阿里云可能大单采购5-6万片", "market_share": "2025年中国AI加速卡出货量份额约4%（16万张）；2026年预测销售额份额12%跃居中国第二（Bernstein Research）；全球数据中心GPU市场份额约8-10%", "is_leader": false, "highlight": "MI300X（192GB HBM3）性能对标H100；MI350系列2025年发布（288GB HBM3e）；ROCm开源生态逐步完善；受益于英伟达出口管制后的市场空白", "revenue": "FY2025总营收约280亿美元，其中数据中心约130亿美元", "exchange": "纳斯达克", "evidence": {"2025年中国出货份额4%": "IDC 2025年中国AI加速卡市场报告", "2026年预测份额12%": "Bernstein Research", "MI300X性能对标H100": "AMD官方/第三方评测"}, "rating": 4}, {"code": "688795", "name": "摩尔线程", "name_en": "Moore Threads", "type": "A股", "role": "国产全功能GPU龙头，自研MUSA架构+云边端一体化方案，\"长江\"SoC直击具身智能+机器人+智能汽车端侧部署，创始人张建中曾任英伟达全球副总裁", "market_share": "国产全功能GPU第一股；中国AI加速卡出货量份额约1-2%（IDC 2025）；夸娥万卡集群算力达10 Exa-Flops；累计专利1,854项", "highlight": "\"长江\"SoC是唯一明确面向具身智能的国产GPU端侧芯片，构建从模型训练→仿真模拟→端侧部署的全国产具身智能计算软硬件栈；MTT S5000单卡1,000 TFLOPS（80GB显存）；已对DeepSeek/智谱/MiniMax等主流大模型实现Day-0适配", "revenue": "2025年营收15.06亿元（+243.37%），毛利率65.57%，亏损10.01亿（研发投入13.05亿占营收86.68%），上市募资75.76亿", "exchange": "上交所科创板", "evidence": {"2025年营收15.06亿元（+243.37%）": "摩尔线程2025年年度报告（2026年审计数据）", "\"长江\"SoC赋能具身智能+边缘智能": "摩尔线程2025年报/产品发布会/IPO招股书", "具身智能计算全栈技术栈": "摩尔线程官方战略发布/投资者交流", "MTT S5000单卡1,000 TFLOPS": "摩尔线程产品规格书"}, "data_note": "研发投入占营收86.68%，预计最早2027年实现盈利；\"长江\"SoC仍在早期推广阶段", "rating": 3, "is_leader": false}, {"code": "688802", "name": "沐曦股份", "name_en": "MetaX Technology", "type": "A股", "role": "国产全栈高性能GPU芯片新锐，\"1+6+X\"战略明确布局具身智能等物理AI前沿方向，四年营收增长超3854倍", "market_share": "国产GPU第一梯队（与摩尔线程并列）；2025年GPU累计销量超5.5万颗；中国AI加速卡出货量份额约1.6%（IDC 2025）；MXMACA软件栈兼容CUDA生态，注册开发者超30万", "highlight": "2025年12月科创板上市；曦云C600全国产工艺GPU量产在即，C700对标H100；曦索X系列（128GB显存）布局AI4S科学智能+具身智能；56.51%高毛利率体现产品竞争力；已部署10余个智算集群", "revenue": "2025年营收16.44亿元（+121.26%），毛利率56.51%，亏损7.89亿（同比收窄44%），研发投入10.27亿", "exchange": "上交所科创板", "evidence": {"2025年营收16.44亿元（+121.26%）": "沐曦股份2025年年度报告（2026-03-26）", "\"1+6+X\"战略含具身智能": "沐曦股份2025年年报/战略发布会", "GPU销量超5.5万颗": "沐曦股份2025年年度报告", "MXMACA生态注册开发者超30万": "沐曦MXMACA开源社区2025年数据"}, "data_note": "尚处亏损阶段（-7.89亿），但亏损同比收窄44%；具身智能为\"X\"前沿方向之一，非当前主要收入来源", "rating": 3, "is_leader": false}, {"code": "688041", "name": "海光信息", "name_en": "Hygon Information", "type": "A股", "role": "国产高端处理器龙头，DCU（深算系列）为AI训练/推理提供国产替代方案，兼容ROCm生态，2026年预测销售额份额8%与英伟达并列中国第四（Bernstein Research）", "market_share": "2025年中国AI加速卡出货量份额约2%（约8.25万张）；2026年预测销售额份额8%位列中国第四（Bernstein Research）", "is_leader": false, "highlight": "深算二号DCU性能对标A100；x86 CPU（海光三号）在国产服务器CPU市场份额第一；2025年营收约85亿元+；CPU+DCU双轮驱动", "revenue": "2025年营收约85亿元（预估）", "exchange": "上交所科创板", "evidence": {"2025年出货约8.25万张": "IDC 2025年中国AI加速卡市场报告", "2026年预测份额8%": "Bernstein Research"}, "rating": 4}, {"code": "—", "name": "壁仞科技", "name_en": "Biren Technology", "type": "未上市", "role": "国产\"GPU芯片四小龙\"之一，自研BR100/BR104通用GPU（7nm工艺），单芯片算力对标英伟达A100，2023年被列入美国实体清单后全面转向国产供应链", "market_share": "国产GPU四小龙之一（与摩尔线程、燧原科技、天数智芯并列）；BR100单芯片BF16算力达512 TFLOPS（对标A100）；壁砺100系列已向运营商/金融等行业客户交付", "highlight": "BR100采用chiplet架构+Chip-on-Wafer-on-Substrate先进封装；2025年完成新一轮融资（估值约200亿元），投资方含中国互联网投资基金、上海国盛等国资背景机构", "revenue": "未公开披露；2025年完成新一轮融资（估值约200亿元）；受实体清单影响，商业化进度延迟", "exchange": "未上市（Private），成立于2019年，总部上海", "evidence": {"BR100算力512 TFLOPS": "壁仞科技BR100产品发布会（2022年8月）", "\"GPU芯片四小龙\"之一": "工信部/行业公认国产GPU主要玩家", "2025年新一轮融资估值约200亿元": "天眼查/IT桔子融资数据; 财新报道", "被列入美国实体清单": "美国商务部BIS 2023年10月17日公告"}, "data_note": "受美国实体清单影响，先进制程流片受限；产品从7nm转向国产工艺，性能指标可能下调；非上市公司，财务数据不公开", "rating": 3, "is_leader": false}, {"code": "—", "name": "燧原科技", "name_en": "Enflame Technology", "type": "未上市", "role": "国产\"GPU芯片四小龙\"之一，自研云燧T系列（训练）+云燧i系列（推理）AI芯片，腾讯为主要投资方及战略客户，产品已在腾讯云大规模部署", "market_share": "国产GPU四小龙之一；云燧T20/T21训练芯片已在腾讯云/智慧城市等场景部署；云燧i20推理芯片能效比领先", "highlight": "腾讯连续多轮领投（持股约20%+），深度绑定腾讯云生态；云燧T30（2025年发布）全面对标H100，采用自研GCU架构；2025年完成D轮融资估值约180亿元；创始人赵立东曾任AMD中国区总裁", "revenue": "未公开披露；2025年D轮融资估值约180亿元；收入主要来自腾讯云及政企大模型训练项目", "exchange": "未上市（Private），成立于2018年，总部上海", "evidence": {"腾讯连续多轮领投": "天眼查/企查查融资记录; 36氪/晚点LatePost报道", "云燧T30对标H100": "燧原科技2025年产品发布会", "\"GPU芯片四小龙\"之一": "工信部/行业公认国产GPU主要玩家", "创始人赵立东曾任AMD中国区总裁": "燧原科技官网/公开信息"}, "data_note": "高度依赖腾讯生态（既是股东也是最大客户）；非上市公司财务数据不公开；GCU架构软件生态兼容性仍在建设中", "rating": 3, "is_leader": false}, {"code": "—", "name": "天数智芯", "name_en": "Iluvatar CoreX", "type": "未上市", "role": "国产\"GPU芯片四小龙\"之一，自研\"天垓100\"7nm通用GPU是国内最早量产的国产GPGPU之一，已适配DeepSeek/GLM/LLaMA等主流大模型", "market_share": "国产GPU四小龙之一；天垓100为国内最早量产的7nm通用GPU之一；已进入中国移动/中国电信等运营商智算中心采购目录", "highlight": "天垓100（2022年量产）兼容x86/ARM双平台；天垓200（2025年）算力提升3倍，支持FP8/H100级别训练；适配DeepSeek-V2/GLM-4/LLaMA 3等主流开源模型；2025年获中国移动战略投资", "revenue": "未公开披露；产品已进入运营商智算中心采购目录；2025年获中国移动战略投资", "exchange": "未上市（Private），成立于2015年，总部上海", "evidence": {"天垓100国内最早量产7nm通用GPU之一": "天数智芯2022年产品发布会; 工信部信创产品目录", "天垓200算力提升3倍": "天数智芯2025年产品技术公告", "\"GPU芯片四小龙\"之一": "工信部/行业公认国产GPU主要玩家", "适配DeepSeek/GLM等主流大模型": "天数智芯官方适配公告/开源社区验证"}, "data_note": "非上市公司财务数据不公开；软件栈（IXMACA）生态兼容性不及摩尔线程MUSA；主要客户为运营商/政企，C端生态薄弱", "rating": 3, "is_leader": false}], "competition_status": "英伟达全球绝对垄断（CUDA生态护城河+数据中心GPU市占率88%），AMD全球第二（ROCm开源生态追赶中），国产GPU四小龙在通用路线追赶——摩尔线程MUSA生态最完整、沐曦MXMACA兼容CUDA、燧原绑定腾讯云、天数智芯获中国移动战投，但软件生态建设需漫长周期"}, {"name": "NPU神经网络处理器", "name_en": "Neural Processing Units (NPU)", "description": "NPU（神经网络处理器）硬件架构参考人脑神经网络运行机理设计，电路单元专门针对神经网络权重计算、特征提取等专属运算优化，砍掉通用计算冗余模块，无多余硬件开销。NPU是当前大模型训练与推理场景普及率最高的专用ASIC品类，华为昇腾全系列、寒武纪思元产品线均属NPU产品。华为搭配昇腾硬件打造CANN软件栈，从根源跳出CUDA生态束缚", "stocks": [{"code": "—", "name": "华为昇腾", "name_en": "Huawei Ascend", "type": "未上市", "role": "中国国产AI芯片绝对主力，美国出口管制后国产替代核心选项，提供从芯片(CANN)到框架(MindSpore)的全栈自主算力方案", "market_share": "中国国产AI加速器出货量第一（占国产近50%），2025年中国AI加速卡销售额份额约40%与英伟达持平，2026年预测将达50%成为绝对主导（Bernstein Research）", "highlight": "Ascend 910C对标H100级别性能；CloudMatrix整合昇腾算力；全栈自主可控不受美国出口管制影响", "revenue": "华为2024年总营收8,621亿元（+22.4%），ICT基础设施业务3,699亿元；昇腾芯片营收未单独披露", "exchange": "未上市（华为技术有限公司，员工持股非公众公司）", "evidence": {"华为2024年总营收8,621亿元": "华为2024年年度报告 (huawei.com/cn/annual-report/2024)", "ICT基础设施业务3,699亿元": "华为2024年年度报告", "中国国产AI加速器市占率50-70%": "IDC中国2025; TrendForce估计（注：分歧较大，部分报告估算30-50%）", "Ascend 910C对标H100": "华为Ascend产品发布会; 第三方性能评测报告"}, "rating": 4, "is_leader": true}, {"code": "688256", "name": "寒武纪", "name_en": "Cambricon", "type": "A股", "role": "国产AI芯片第二梯队核心标的，思元系列云端智能芯片已规模化部署，2025年出货约11.6万张（中国AI加速卡出货量份额约2.9%），2026年预测销售额份额将跃升至9%位列第三（Bernstein Research）", "market_share": "2025年中国AI加速卡出货量份额约2.9%（国产第三，与昆仑芯并列）；2026年预测销售额份额9%位列中国第三（Bernstein Research）", "is_leader": false, "highlight": "思元590芯片对标A100性能；2025年营收约33亿元+；云端AI芯片年出货量接近十万颗级别；2026年有望受益于国产替代加速放量", "revenue": "2025年营收约33亿元（预估）", "exchange": "上交所科创板", "evidence": {"2025年出货11.6万张份额2.9%": "IDC 2025年中国AI加速卡市场报告（路透社援引）", "2026年预测份额9%": "Bernstein Research 2026年中国AI芯片预测"}, "data_note": "2026年预测份额跃升主要基于国产替代政策+思元590放量预期；实际业绩取决于产能和客户导入进度", "rating": 4}], "competition_status": "华为昇腾绝对主导（2026年预测62%份额，摩根士丹利），寒武纪第二（14%）；实测昇腾950/思元690 token生成量对比英伟达H20高出50%-150%；昇腾910C已大规模商用，昇腾950推进中"}, {"name": "TPU张量处理器", "name_en": "Tensor Processing Units (TPU)", "description": "TPU（张量处理器）由谷歌率先研发并商用落地，产品架构面向AI任务中成块张量数据做批量并行运算优化，砍掉通用计算冗余模块，能效表现优于传统GPU。全球多家科技企业自研自有TPU，国内中昊芯英已实现自研TPU规模化量产，紧跟谷歌等海外巨头放弃全盘外购通用GPU、自研定制芯片的产业趋势", "stocks": [{"code": "—", "name": "中昊芯英", "name_en": "ThinkForce", "type": "未上市", "role": "国内唯一实现自研TPU架构规模化量产的AI芯片企业，产品面向云端大模型推理场景，芯片电路围绕张量批量并行运算定制优化，能效表现优于同级别通用GPU", "market_share": "国内TPU路线唯一规模量产企业；TPU芯片已批量交付多家云厂商及政企客户；具体市占率未公开（TPU为新兴细分赛道）", "highlight": "自研\"刹那\"TPU架构专为张量运算优化；芯片已实现规模化量产并批量交付云厂商客户；能效比（TOPS/W）优于同级别GPU；受益于谷歌TPU全球产业趋势，国内云厂商自研/采购TPU意愿增强", "revenue": "未公开披露；已实现芯片规模量产和商业交付", "exchange": "未上市（Private），总部上海", "evidence": {"国内唯一自研TPU规模量产企业": "中昊芯英官方公告/行业报道; 工信部AI芯片企业名录", "TPU芯片已批量交付": "中昊芯英客户案例/云厂商合作公告", "谷歌TPU开创TPU路线": "Google Cloud TPU产品线（2016年首发）行业共识"}, "data_note": "TPU赛道国内参与者极少（技术门槛高+生态封闭），中昊芯英先发优势明显但市场规模尚小；非上市公司财务数据不公开", "rating": 3, "is_leader": true}], "competition_status": "谷歌全球TPU标杆（Cloud TPU v5p支撑Gemini大模型训练），国内仅中昊芯英实现自研TPU规模量产，参与者稀少但技术壁垒高"}, {"name": "PPU并行处理单元", "name_en": "Parallel Processing Units (PPU)", "description": "PPU（并行处理单元）为阿里巴巴平头哥自研定制化ASIC架构，没有照搬NPU、TPU成熟设计，专为阿里云业务、智能代理类AI任务量身开发。真武系列处理器持续迭代——最新真武M890综合性能为前代810E的3倍，精准适配当下火热的智能代理AI算力需求", "stocks": [{"code": "—", "name": "阿里平头哥", "name_en": "T-Head (Alibaba)", "type": "未上市", "role": "阿里巴巴旗下半导体公司，自研PPU（Parallel Processing Unit）定制化ASIC架构，专为阿里云业务与智能代理类AI任务量身开发，真武系列处理器已迭代至M890", "market_share": "国内PPU架构唯一玩家（阿里云定制，不外销）；真武系列芯片支撑阿里云通义大模型推理及智能代理（Agent）算力需求", "highlight": "真武M890（2026年阿里云峰会发布）综合性能达前代810E的3倍，精准适配智能代理AI算力需求；PPU架构不照搬NPU/TPU，专为阿里云业务场景定制；阿里云自研芯片+CIPU+神龙架构构成软硬一体全栈算力体系", "revenue": "不独立披露（阿里云内部结算）；芯片不对外销售，通过阿里云算力服务间接商业化", "exchange": "未上市（阿里巴巴集团子公司，代码BABA/9988.HK）", "evidence": {"真武M890综合性能为前代3倍": "2026年阿里云年度峰会官方发布", "PPU为阿里平头哥自研定制架构": "阿里平头哥官方技术白皮书/产品文档", "真武系列芯片迭代": "阿里云/平头哥历年产品发布会"}, "data_note": "PPU芯片不对外独立销售，通过阿里云算力服务间接变现，无法直接估算市场份额；定制化架构生态封闭，不参与第三方芯片市场竞争", "rating": 3, "is_leader": false}], "competition_status": "阿里云独家定制架构，芯片不对外独立销售，通过阿里云算力服务间接变现，策略与谷歌TPU自用模式相似"}]}, {"name": "芯片上游供应链", "name_en": "Chip Upstream Supply Chain", "description": "芯片制造涉及从设计工具到封装测试的完整产业链。以英伟达H100（BOM成本约$3,000-3,500）和华为昇腾910C为参考：晶圆代工占芯片总成本30-40%，HBM/先进存储10-15%，封装测试10-15%，半导体材料5-8%，EDA工具与IP核2-3%，封装基板3-5%。半导体设备是晶圆厂最大资本开支项（占CAPEX 60-70%，设备商毛利率40-55%）。美国出口管制驱动下，华为昇腾供应链已全面转向国产（中芯国际代工+国产设备+国产材料），与英伟达全球供应链形成\"双轨并行\"格局", "stocks": [], "sub_domains": [{"name": "EDA工具与IP核", "name_en": "EDA Tools & IP Cores", "description": "EDA（电子设计自动化）是芯片设计必需工具，IP核是芯片功能模块授权。EDA+IP合计占芯片成本约2-3%，但毛利率高达80-90%——全球EDA市场被Synopsys/Cadence/Siemens EDA三巨头垄断（合计75%+）。IP核领域ARM在移动/嵌入式CPU IP市占率超90%。美国制裁后华为无法使用最新版Synopsys/Cadence，倒逼华大九天等国产EDA加速替代", "stocks": [{"code": "SNPS", "name": "新思科技", "name_en": "Synopsys", "type": "美股", "role": "全球EDA工具绝对龙头（市占率约32%），英伟达/AMD/高通等全球头部芯片设计企业核心EDA供应商，2025年以350亿美元收购Ansys构建从芯片到系统的统一仿真平台", "market_share": "全球EDA市场份额约32%（第一）；2025年收购Ansys后EDA+CAE双料王者；为英伟达下一代GPU设计提供全流程EDA工具链", "highlight": "Fusion Compiler为全球最先进芯片设计平台之一；AI驱动EDA（DSO.ai）实现芯片设计自动化优化；收购Ansys后打通芯片→系统→物理AI全栈仿真", "revenue": "FY2025营收约68亿美元（含Ansys并表），毛利率约80%", "exchange": "纳斯达克", "evidence": {"全球EDA市占率约32%": "Gartner/IDC 2025全球EDA市场报告", "收购Ansys 350亿美元": "Synopsys 2025年1月收购公告", "FY2025营收约68亿美元": "Synopsys FY2025年度报告"}, "rating": 5, "is_leader": true}, {"code": "CDNS", "name": "楷登电子", "name_en": "Cadence Design Systems", "type": "美股", "role": "全球EDA工具第二大厂商（市占率约30%），与Synopsys构成全球EDA双寡头，同时也是英伟达/AMD/高通等芯片设计核心工具供应商", "market_share": "全球EDA市场份额约30%（第二）；在模拟/混合信号/PCB设计领域领先Synopsys；Cadence Cerebrus AI驱动芯片设计效率提升10倍", "highlight": "Virtuoso模拟设计平台市场垄断；Cerebrus AI工具实现芯片PPA（功耗/性能/面积）自动优化；与台积电/三星/英特尔先进制程深度合作", "revenue": "FY2025营收约46亿美元，毛利率约89%", "exchange": "纳斯达克", "evidence": {"全球EDA市占率约30%": "Gartner/IDC 2025全球EDA市场报告", "FY2025营收约46亿美元": "Cadence FY2025年度报告", "毛利率约89%": "Cadence FY2025年报财务数据"}, "rating": 5, "is_leader": true}, {"code": "301269", "name": "华大九天", "name_en": "Empyrean Technology", "type": "A股", "role": "国产EDA工具绝对龙头，国内唯一覆盖模拟IC设计全流程EDA的企业，华为昇腾/中芯国际等国产芯片产业链核心EDA供应商，美国制裁后国产替代核心受益标的", "market_share": "国内EDA市场份额约6-8%（国产第一，全球约1%）；模拟IC设计EDA覆盖最全；华为昇腾芯片设计国产EDA主力工具", "highlight": "国内唯一覆盖模拟IC设计全流程的EDA工具链；数字IC EDA工具持续补齐（布局布线/时序分析等）；深度绑定华为/中芯国际国产芯片产业链", "revenue": "2025年营收约18亿元（预估），毛利率约85%+", "exchange": "深交所创业板", "evidence": {"国内EDA国产第一": "赛迪顾问2025年中国EDA市场报告", "国内唯一模拟IC全流程EDA": "华大九天招股书/年度报告", "华为昇腾国产EDA供应商": "华大九天投资者关系活动记录"}, "data_note": "数字IC全流程EDA仍受制于Synopsys/Cadence，全球市占率仅约1%；营收体量远小于国际巨头（Synopsys 68亿美元 vs 华大九天18亿元）", "rating": 4, "is_leader": true}, {"code": "688521", "name": "芯原股份", "name_en": "VeriSilicon", "type": "A股", "role": "国产半导体IP核+芯片设计服务龙头，全球排名第七的半导体IP供应商，拥有GPU/NPU/VPU/DSP等自主IP核，为华为昇腾/寒武纪等国产AI芯片提供IP授权和设计服务", "market_share": "全球半导体IP市场排名第七（IPnest 2024）；中国半导体IP授权收入第一；NPU IP核已被多款国产AI芯片采用", "highlight": "自研GPU/NPU/VPU/DSP/ISP全系列IP核；NPU IP已授权给华为昇腾/寒武纪等国产AI芯片；一站式芯片定制服务（从IP授权到量产交付）；2025年AI相关IP收入同比+150%+", "revenue": "2025年营收约27亿元（预估），毛利率约42%", "exchange": "上交所科创板", "evidence": {"全球半导体IP排名第七": "IPnest 2024全球半导体IP市场报告", "NPU IP授权国产AI芯片": "芯原股份年度报告/IP授权客户披露", "2025年AI相关IP收入+150%": "芯原股份2025年度业绩快报"}, "data_note": "毛利率（~42%）显著低于纯EDA/IP公司（80-90%），因为芯原采用IP授权+设计服务双模式，设计服务拉低整体毛利率；净利润波动较大", "rating": 4, "is_leader": true}], "competition_status": "全球双寡头垄断（Synopsys+ Cadence合计62%），第三极Siemens EDA约8%；国产华大九天/概伦电子/广立微等在国内模拟IC EDA领域逐步突破，但数字IC全流程EDA国产化率仍不足10%"}, {"name": "半导体设备", "name_en": "Semiconductor Equipment", "description": "半导体设备是晶圆厂最大的资本开支项（占CAPEX的60-70%）。光刻机、刻蚀机、薄膜沉积设备为三大核心设备（合计占设备支出的60%+）。设备商毛利率普遍40-55%，属于芯片产业链利润率最高的环节之一。ASML在EUV光刻机领域100%垄断，应用材料在薄膜沉积/离子注入等领域全球第一。华为昇腾产线依赖北方华创/中微公司等国产设备实现去美化", "stocks": [{"code": "ASML", "name": "阿斯麦", "name_en": "ASML", "type": "美股", "role": "全球唯一EUV极紫外光刻机供应商（100%垄断），台积电/三星/英特尔先进制程必需设备。英伟达H100（台积电4nm）生产环节核心设备供应商——没有ASML EUV，先进AI芯片无法制造", "market_share": "全球光刻机市场份额约85%（DUV+EUV），其中EUV 100%垄断；单台High-NA EUV售价3.5-4亿欧元", "highlight": "2025年营收301亿欧元（+9%），毛利率51.5%；单台High-NA EUV售价3.5-4亿欧元；中国市场占营收约25%（受出口管制影响持续下降）；2025年对华DUV出口限制进一步收紧", "revenue": "2025年营收301亿欧元（+9%），净利润76亿欧元，毛利率51.5%", "exchange": "纳斯达克", "evidence": {"2025年营收301亿欧元": "ASML 2025年年度报告", "EUV 100%垄断": "行业共识/ASML官方", "High-NA EUV售价3.5-4亿欧元": "ASML产品定价/Tom's Hardware报道"}, "rating": 5, "is_leader": true}, {"code": "AMAT", "name": "应用材料", "name_en": "Applied Materials", "type": "美股", "role": "全球半导体设备销售额第一（薄膜沉积/离子注入/CMP等领域领先），台积电/三星/英特尔主力设备供应商，英伟达芯片生产间接依赖其设备", "market_share": "全球半导体设备市场销售额第一（约20%份额，剔除ASML后）；薄膜沉积设备市占率约40%+全球第一", "highlight": "Endura平台为全球最先进物理气相沉积(PVD)设备；Producer平台在化学气相沉积(CVD)领域领先；2025年中国市场收入占比从40%+降至约30%（受出口管制影响）", "revenue": "FY2025营收约275亿美元，毛利率约47%", "exchange": "纳斯达克", "evidence": {"全球半导体设备销售额第一": "VLSI Research/TechInsights 2025设备商排名", "FY2025营收约275亿美元": "Applied Materials FY2025年度报告"}, "rating": 5, "is_leader": true}, {"code": "002371", "name": "北方华创", "name_en": "NAURA Technology", "type": "A股", "role": "国产半导体设备绝对龙头（营收体量第一），覆盖刻蚀/薄膜沉积/清洗/热处理等核心工艺设备，华为昇腾产线去美化核心设备供应商", "market_share": "中国半导体设备销售额第一；国产刻蚀/薄膜沉积设备市占率约15-20%（国产第一）；2025年新签订单超400亿元", "highlight": "2025年营收268亿元（+46.4%），归母净利润56.5亿元（+44.5%）；12英寸刻蚀/薄膜沉积设备已进入中芯国际/华虹/长存等主流产线；受益于华为昇腾产线去美化设备采购", "revenue": "2025年营收268亿元（+46.4%），归母净利润56.5亿元（+44.5%），毛利率约43%", "exchange": "深交所", "evidence": {"2025年营收268亿元（+46.4%）": "北方华创2025年年度报告", "中国半导体设备销售额第一": "中国电子专用设备工业协会数据", "华为昇腾去美化核心设备供应商": "券商研报/供应链公开信息"}, "rating": 4, "is_leader": true}, {"code": "688012", "name": "中微公司", "name_en": "AMEC", "type": "A股", "role": "国产刻蚀设备龙头（CCP电容耦合等离子体刻蚀全球领先），已进入台积电5nm/3nm产线，华为昇腾国产化产线核心刻蚀设备供应商", "market_share": "国产刻蚀设备龙头，CCP刻蚀已进入台积电5nm/3nm量产线；国内等离子体刻蚀设备市占率约25-30%", "highlight": "CCP刻蚀设备全球领先（仅次于Lam Research/TEL）；ICP刻蚀设备快速追赶；2025年营收约94亿元（+44%）；已获得中芯国际/长存/华虹等国产产线大量订单", "revenue": "2025年营收约94亿元（+44%），毛利率约46%", "exchange": "上交所科创板", "evidence": {"2025年营收约94亿元": "中微公司2025年年度报告", "进入台积电5nm/3nm产线": "中微公司公告/台积电供应商名录", "CCP刻蚀全球领先": "VLSI Research刻蚀设备市场排名"}, "rating": 4, "is_leader": true}], "competition_status": "全球寡头格局（ASML在光刻机100%垄断、应用材料/ Lam/TEL在刻蚀/沉积领域三强并立），国产北方华创+中微在刻蚀/沉积领域突破但高端光刻仍是死穴——上海微电子90nm光刻机仍处验证阶段"}, {"name": "晶圆代工", "name_en": "Wafer Foundry", "description": "晶圆代工是芯片制造的核心环节，占芯片总成本约30-40%。台积电凭借4nm/3nm先进制程垄断全球AI芯片代工（英伟达H100/B200全部由台积电代工），毛利率高达55%+。中芯国际受美国设备出口管制限制（只能使用DUV多重曝光生产7nm），是华为昇腾芯片代工的唯一选择——尽管良率和成本均逊于台积电", "stocks": [{"code": "TSM", "name": "台积电", "name_en": "TSMC", "type": "美股", "role": "全球晶圆代工绝对霸主（市占率约62%），英伟达H100/B200/Blackwell全系列芯片独家代工商、AMD MI300系列独家代工商——全球高端AI芯片几乎全部由台积电制造", "market_share": "全球晶圆代工市场份额约62%（TrendForce 2025）；7nm以下先进制程市占率超90%；3nm制程全球唯一量产厂商", "highlight": "2025年营收约900亿美元（+30% YoY），毛利率55-60%；3nm（N3）已量产，2nm（N2）2025年试产2026年量产；CoWoS先进封装产能翻倍扩产（AI芯片封装瓶颈）；美国亚利桑那/日本熊本/德国海外工厂布局", "revenue": "2025年营收约900亿美元（+30%），毛利率55-60%，净利率约40%", "exchange": "纽交所（台股2330.TW）", "evidence": {"全球市占率约62%": "TrendForce 2025 Q4全球晶圆代工市场报告", "英伟达H100/Blackwell独家代工": "NVIDIA官方供应链公告/台积电先进制程客户披露", "2025年营收约900亿美元": "台积电2025年全年财报（合并报表）"}, "rating": 5, "is_leader": true}, {"code": "688981", "name": "中芯国际", "name_en": "SMIC", "type": "A股", "role": "中国大陆晶圆代工绝对龙头（全球第五），华为昇腾910C/910B芯片主力代工商——利用DUV多重曝光工艺实现7nm级别制造，是美国芯片封锁下国产AI芯片唯一的先进制程代工选项", "market_share": "全球晶圆代工市场份额约5.5%（第五，TrendForce）；中国大陆晶圆代工市场份额约20%+（大陆第一）；7nm（N+2）已小规模量产供应华为昇腾", "highlight": "2025年营收约520亿元（+9%），毛利率约20%（远低于台积电，因DUV多重曝光成本高+良率低）；12英寸产能持续扩张（深圳/上海临港/北京/天津四地建厂）；受美国设备出口管制限制，无法获得EUV", "revenue": "2025年营收约520亿元（+9%），毛利率约20%，净利率约8%", "exchange": "上交所科创板（港股00981.HK）", "evidence": {"全球市占率约5.5%": "TrendForce 2025 Q4全球晶圆代工市场报告", "7nm(N+2)量产供应华为昇腾": "TechInsights芯片拆解报告/中芯国际技术路线图", "2025年营收约520亿元": "中芯国际2025年年度报告"}, "data_note": "毛利率仅20%（台积电55%+），DUV多重曝光生产7nm成本高、良率低；受制于美国设备出口管制，先进制程突破极为困难", "rating": 4, "is_leader": true}, {"code": "01347.HK", "name": "华虹半导体", "name_en": "Hua Hong Semiconductor", "type": "港股", "role": "中国大陆第二大晶圆代工厂（全球第六），聚焦特色工艺（BCD/eNVM/IGBT等），虽然不做7nm以下先进制程，但在功率半导体/模拟芯片代工领域国内领先，为芯片供应链提供关键支撑", "market_share": "全球晶圆代工市场份额约2%（第六）；中国大陆第二大晶圆代工厂；功率半导体/模拟芯片特色工艺国内第一", "highlight": "2025年12英寸产线产能持续爬坡（无锡二期）；华虹九厂（无锡12英寸新线）在建；特色工艺在汽车/工业/新能源领域需求旺盛", "revenue": "2025年营收约170亿元，毛利率约15-20%", "exchange": "港交所（A股688347）", "evidence": {"全球市占率约2%": "TrendForce 2025 Q4全球晶圆代工市场报告", "中国大陆第二大晶圆代工厂": "中国半导体行业协会数据"}, "data_note": "不做7nm以下先进逻辑制程（与AI芯片直接关联较弱），聚焦特色工艺（功率/模拟/嵌入式存储），在汽车/工业芯片供应链中有独特地位", "rating": 3, "is_leader": false}], "competition_status": "台积电绝对垄断（全球62%，先进制程90%+），三星（约12%）在3nm/2nm技术上勉强追赶但良率不足，中芯国际（5.5%）被限制在DUV+多重曝光路线——华为昇腾产能受限于中芯7nm产能瓶颈和低良率（估计仅50-60%）"}, {"name": "封装测试", "name_en": "Packaging & Testing", "description": "封装测试是芯片制造的后道工序，占芯片总成本约10-15%，毛利率15-30%。先进封装（CoWoS/3D封装/Chiplet）正成为AI芯片性能提升的关键——台积电CoWoS封装是英伟达H100/B200产能瓶颈。华为昇腾受限于无法获得台积电CoWoS，转向长电科技/通富微电等国产先进封装方案", "stocks": [{"code": "3711.TW", "name": "日月光", "name_en": "ASE Technology", "type": "台股", "role": "全球封测行业绝对龙头（市占率约30%），英伟达AI芯片传统封装/测试主要外包方，同时布局先进封装（FOCoS/ VIPack）与台积电CoWoS形成互补", "market_share": "全球封测市场市占率约30%（第一）；英伟达GPU传统封装+测试服务主要供应商", "highlight": "2025年营收约6,200亿新台币（约190亿美元）；先进封装收入占比持续提升；受益于AI芯片封装测试需求爆发", "revenue": "2025年营收约6,200亿新台币（约190亿美元），毛利率约18%", "exchange": "台湾证券交易所（NYSE: ASX）", "evidence": {"全球封测市占率约30%": "Gartner/IDC 2025全球封测市场报告", "英伟达GPU封装测试供应商": "英伟达供应链披露/行业研报"}, "rating": 4, "is_leader": true}, {"code": "600584", "name": "长电科技", "name_en": "JCET", "type": "A股", "role": "国产封测龙头（全球第三），国内先进封装技术最全面的封测企业，华为昇腾芯片先进封装核心供应商——提供FC-BGA/2.5D/3D封装方案替代台积电CoWoS", "market_share": "全球封测市场市占率约10%（第三，仅次于日月光/安靠）；中国封测市场份额第一；先进封装（FC-BGA/2.5D/3D）国内最全面", "highlight": "2025年营收约320亿元；先进封装收入占比超40%；为华为昇腾/寒武纪等国产AI芯片提供FC-BGA/2.5D封装方案；深度参与国产AI芯片\"去CoWoS化\"技术路线", "revenue": "2025年营收约320亿元，毛利率约18%，净利率约5%", "exchange": "上交所", "evidence": {"全球封测市占率约10%": "Gartner/IDC 2025全球封测市场报告", "华为昇腾先进封装供应商": "长电科技投资者关系活动记录/供应链信息", "中国封测市场份额第一": "中国半导体行业协会封装分会数据"}, "rating": 4, "is_leader": true}, {"code": "002156", "name": "通富微电", "name_en": "Tongfu Microelectronics", "type": "A股", "role": "国产封测第二（全球第四），深度绑定AMD（承接AMD CPU/GPU封测订单），同步拓展国产AI芯片先进封装——为华为昇腾提供FC-BGA封装方案", "market_share": "全球封测市场市占率约7%（第四，TrendForce）；AMD CPU/GPU封测核心供应商（承接AMD约70%+封测订单）", "highlight": "2025年营收约260亿元；与AMD合资工厂（苏州/槟城）稳定贡献收入；先进封装（2.5D/3D/Chiplet）产能快速扩张；华为昇腾+寒武纪+地平线等国产AI芯片客户拓展", "revenue": "2025年营收约260亿元，毛利率约15%", "exchange": "深交所", "evidence": {"全球封测市占率约7%": "TrendForce 2025全球封测市场报告", "AMD约70%封测订单承接": "通富微电年度报告/AMD供应链分析", "为华为昇腾等国产AI芯片提供封装": "通富微电投资者关系活动记录"}, "data_note": "深度绑定AMD（营收占比超50%），AMD MI300系列AI芯片封测需求带来增量；但AMD市占率远低于英伟达，AI芯片封测弹性有限", "rating": 3, "is_leader": false}], "competition_status": "全球日月光一家独大（30%），安靠/长电/通富/力成紧随其后；先进封装成AI芯片新战场——台积电CoWoS产能决定英伟达出货量，国产长电/通富以FC-BGA+2.5D方案填补华为昇腾去CoWoS空白"}, {"name": "半导体材料", "name_en": "Semiconductor Materials", "description": "半导体材料占芯片总成本约5-8%，涵盖硅片（~30%）、光刻胶（~15%）、电子特气（~15%）、靶材（~10%）、CMP抛光材料（~8%）等。毛利率20-35%，行业被日本企业主导（信越化学/SUMCO在硅片、JSR/TOK在光刻胶全球领先）。华为昇腾国产化产线全面推动半导体材料国产替代（沪硅产业→硅片、彤程新材/南大光电→光刻胶、安集科技→CMP抛光液）", "stocks": [{"code": "688126", "name": "沪硅产业", "name_en": "National Silicon Industry Group", "type": "A股", "role": "国产大硅片龙头，国内唯一实现300mm（12英寸）大硅片规模化量产的企业，中芯国际/华虹半导体等国产晶圆厂核心硅片供应商——华为昇腾芯片制造间接依赖其硅片", "market_share": "国内300mm大硅片市占率约20-25%（国产第一）；全球市占率约3-5%；中芯国际核心硅片供应商", "highlight": "2025年300mm大硅片产能达60万片/月（上海/无锡/太原三地产线）；国内唯一通过中芯国际/华虹/长存等主流晶圆厂认证的国产大硅片企业", "revenue": "2025年营收约40亿元，毛利率约18%（仍处产能爬坡亏损期）", "exchange": "上交所科创板", "evidence": {"国内300mm大硅片国产第一": "中国半导体行业协会/赛迪顾问数据", "中芯国际核心硅片供应商": "沪硅产业招股书/客户披露"}, "data_note": "仍处亏损状态（产能爬坡+高折旧），全球大硅片市场被日本信越化学/SUMCO垄断（合计50%+）；沪硅产能和良率仍在追赶中", "rating": 3, "is_leader": true}, {"code": "603650", "name": "彤程新材", "name_en": "Red Avenue New Materials", "type": "A股", "role": "国产半导体光刻胶龙头，子公司北京科华/北旭电子分别覆盖半导体光刻胶和面板光刻胶，中芯国际/华虹半导体光刻胶国产替代核心供应商——KrF光刻胶已量产出货，ArF光刻胶验证推进中", "market_share": "国产半导体光刻胶第一（KrF光刻胶已量产）；国内半导体光刻胶市场占有率约5-8%；北京科华为中芯国际第一大国产光刻胶供应商", "highlight": "KrF光刻胶已实现批量供货（中芯国际/华虹/长存等）；ArF（193nm）干法光刻胶通过中芯国际验证；EUV光刻胶仍在研发阶段；半导体光刻胶+面板光刻胶双业务布局", "revenue": "2025年总营收约35亿元（含轮胎橡胶助剂+光刻胶双主业），光刻胶业务约8亿元", "exchange": "上交所", "evidence": {"KrF光刻胶已量产出货": "彤程新材2025年年度报告", "ArF光刻胶通过中芯国际验证": "彤程新材公告/北京科华技术进展"}, "data_note": "光刻胶业务仅占总营收约20%（主业仍为轮胎橡胶助剂）；EUV光刻胶尚在研发，与日本JSR/TOK差距至少5-10年", "rating": 3, "is_leader": true}, {"code": "688019", "name": "安集科技", "name_en": "Anji Microelectronics", "type": "A股", "role": "国产CMP抛光液/清洗液龙头，中芯国际/华虹/长存等国内主流晶圆厂核心抛光液供应商，华为昇腾芯片制造间接依赖其CMP材料", "market_share": "国产CMP抛光液市占率约30%+（国产第一）；国内CMP抛光液市场整体市占率约15-20%", "highlight": "铜/钨/介质/多晶硅全系列CMP抛光液已量产；14nm/7nm先进制程用抛光液通过中芯国际验证；CMP抛光垫+清洗液产品矩阵完善", "revenue": "2025年营收约18亿元，毛利率约52%", "exchange": "上交所科创板", "evidence": {"国产CMP抛光液市占率30%+": "中国半导体行业协会材料分会数据", "7nm抛光液通过中芯国际验证": "安集科技2025年年度报告"}, "data_note": "全球CMP抛光液市场仍被Cabot Microelectronics（现Entegris）垄断（约40%）；安集毛利率52%为半导体材料中最高水平", "rating": 4, "is_leader": true}, {"code": "300666", "name": "江丰电子", "name_en": "Jiangfeng Electronics", "type": "A股", "role": "国产超高纯金属靶材龙头（溅射靶材），已进入台积电7nm/5nm产线认证，中芯国际/华虹等国产晶圆厂核心靶材供应商——华为昇腾产线去美化靶材核心供应商", "market_share": "国产半导体靶材市占率约25%+（国产第一）；已进入台积电7nm/5nm产线（国产靶材唯一）；全球靶材市占率约3-5%", "highlight": "超高纯铝/钛/铜/钽靶材全系列量产；全球仅有的4家掌握超高纯金属溅射靶材技术的企业之一；台积电5nm/3nm产线靶材验证持续推进", "revenue": "2025年营收约30亿元，毛利率约30%", "exchange": "深交所创业板", "evidence": {"已进入台积电7nm/5nm产线": "江丰电子官方公告/台积电供应商名录", "全球仅4家掌握超高纯靶材技术": "SEMI行业报告", "国产靶材国产第一": "中国电子材料行业协会数据"}, "rating": 4, "is_leader": true}, {"code": "688268", "name": "华特气体", "name_en": "Watt Gas", "type": "A股", "role": "国产电子特气龙头，已进入中芯国际/台积电/英特尔/美光等全球主流晶圆厂供应链，华为昇腾芯片制造间接依赖其高纯电子特气", "market_share": "国产电子特气市占率约10-15%（国产第一）；已通过台积电/英特尔/中芯国际/美光等全球Top10晶圆厂中的8家认证", "highlight": "高纯六氟乙烷/四氟化碳/八氟环丁烷等40余种电子特气量产；国内唯一进入台积电/英特尔供应链的国产电子特气企业", "revenue": "2025年营收约22亿元，毛利率约35%", "exchange": "上交所科创板", "evidence": {"进入台积电/英特尔供应链": "华特气体官方公告/客户供应商名录", "国产电子特气国产第一": "中国电子材料行业协会数据", "通过全球8家Top10晶圆厂认证": "华特气体招股书/年度报告"}, "rating": 3, "is_leader": true}], "competition_status": "全球半导体材料被日本企业（信越化学/SUMCO/JSR/TOK/信越）主导（合计约50%+份额），国产材料企业在硅片/光刻胶/特气/靶材/CMP等领域全面突破但市占率仍低（5-20%），华为昇腾产线是国产材料最大的单一需求驱动力"}, {"name": "HBM/先进存储", "name_en": "HBM & Advanced Memory", "description": "HBM（高带宽内存）是AI芯片的核心配套——单颗H100搭载6颗HBM3（共80GB），HBM占H100 BOM成本约40-50%（约$1,500-2,000），毛利率30-50%。SK海力士全球HBM市占率超50%，是英伟达H100/B200主供应商。华为昇腾因无法采购SK海力士HBM3（美国制裁），被迫降级使用国产替代方案，HBM供给是国产AI芯片最大瓶颈之一", "stocks": [{"code": "000660.KS", "name": "SK海力士", "name_en": "SK Hynix", "type": "韩股", "role": "全球HBM（高带宽内存）绝对霸主（市占率超50%），英伟达H100/H200/B200全系列HBM3/HBM3e独家主供应商——没有SK海力士HBM，英伟达AI芯片无法量产", "market_share": "全球HBM市场份额约50%+（第一，TrendForce 2025）；HBM3/HBM3e全球产能最大、良率最高；英伟达HBM3e约80%+由SK海力士供应", "highlight": "2025年营收约66万亿韩元（约480亿美元），HBM收入同比+300%；HBM4（第六代）2025年发布2026年量产；HBM3e 12Hi（12层堆叠）已配套英伟达B200；受益于AI芯片HBM需求爆发，营业利润率超50%", "revenue": "2025年营收约66万亿韩元（约480亿美元），营业利润约23万亿韩元，营业利润率约35%", "exchange": "韩国交易所", "evidence": {"全球HBM市占率50%+": "TrendForce 2025全球HBM市场报告", "英伟达HBM3e约80%+由SK海力士供应": "SK海力士官方/英伟达供应链披露/分析师研报", "2025年营收约66万亿韩元": "SK海力士2025年年度报告"}, "rating": 5, "is_leader": true}, {"code": "—", "name": "长鑫存储", "name_en": "CXMT", "type": "未上市", "role": "中国唯一量产DRAM内存的企业，华为昇腾芯片HBM国产替代核心希望——正在研发国产HBM2/HBM3，但制程/良率/堆叠技术均显著落后于SK海力士", "market_share": "全球DRAM市场份额约3-5%（第四/第五，次于三星/SK海力士/美光）；中国DRAM唯一规模量产企业", "highlight": "长鑫DDR4/DDR5已量产（17nm/19nm制程）；HBM2/HBM3研发推进中（但无公开量产时间表）；受美国出口管制限制无法获取先进封装设备（影响HBM堆叠）；华为昇腾\"去HBM化\"国产替代方案的核心承担者", "revenue": "未公开披露（非上市公司）；估计2025年营收约100-150亿元", "exchange": "未上市（Private），总部合肥，合肥国资+国家大基金支持", "evidence": {"中国唯一DRAM量产企业": "工信部/中国半导体行业协会", "HBM研发推进中": "长鑫存储技术路线图/行业报道/芯智讯", "全球DRAM份额约3-5%": "TrendForce 2025全球DRAM市场报告"}, "data_note": "HBM研发进度和量产能力为高度敏感信息（出口管制+技术保密），公开资料极为有限；中国推进国产HBM是头部战略任务，但短期（2025-2027）难以替代SK海力士HBM3", "rating": 3, "is_leader": true}, {"code": "603986", "name": "兆易创新", "name_en": "GigaDevice", "type": "A股", "role": "国产Nor Flash/DRAM龙头，与长鑫存储深度合作（DRAM联合研发+代工），虽不做HBM但覆盖AI端侧推理芯片/机器人芯片所需的Nor Flash和SDRAM，是芯片存储生态重要环节", "market_share": "全球Nor Flash市场份额约15-20%（前三）；国产Nor Flash第一；布局DRAM（与长鑫合作）", "highlight": "Nor Flash全球第三（仅次于华邦电/旺宏）；SPI NAND Flash+DRAM+MCU打造物联网/工业/汽车全栈芯片存储方案；2025年AI端侧/机器人存储需求增加", "revenue": "2025年营收约78亿元，毛利率约38%", "exchange": "上交所", "evidence": {"Nor Flash全球前三": "IC Insights/CINNO Research 2025", "与长鑫存储深度合作": "兆易创新年度报告/长鑫存储合作公告", "2025年营收约78亿元": "兆易创新2025年年度报告"}, "data_note": "不做HBM（与AI训练芯片直接关联较弱）；AI端侧推理/具身智能/自动驾驶芯片的Nor Flash/SDRAM需求是间接受益方向", "rating": 3, "is_leader": false}], "competition_status": "HBM被SK海力士（50%+）/三星（~40%）/美光（~10%）三巨头垄断，中国HBM受制于DRAM制程+先进封装双重瓶颈；国产长鑫在DDR5层级追赶、HBM处于研发早期——华为昇腾HBM缺口短期无法弥补，是国产AI芯片最大风险敞口"}, {"name": "IC载板/封装基板", "name_en": "IC Substrates & Packaging Substrates", "description": "IC载板（封装基板）是连接芯片与PCB的关键桥梁，占芯片总成本约3-5%，毛利率20-30%。AI芯片采用ABF（Ajinomoto Build-up Film）载板——单颗英伟达H100 ABF载板面积约为普通CPU的3-4倍，价值量$100-200。全球ABF载板主要由日本/台湾企业供应（欣兴电子/Ibiden/新光电气），国产替代尚在早期", "stocks": [{"code": "3037.TW", "name": "欣兴电子", "name_en": "Unimicron", "type": "台股", "role": "全球ABF载板龙头（市占率约20%），英伟达H100/B200 AI芯片封装基板核心供应商——ABF载板是AI芯片先进封装不可缺少的材料", "market_share": "全球ABF载板市占率约15-20%（第一）；全球IC载板综合排名第一", "highlight": "英伟达AI芯片ABF载板主力供应商；受益于AI芯片ABF载板面积/层数持续提升（H100约3-4倍于普通CPU）；2025年ABF载板产能扩充中（台湾+中国大陆厂）", "revenue": "2025年营收约1,700亿新台币（约52亿美元），毛利率约25%", "exchange": "台湾证券交易所", "evidence": {"全球ABF载板龙头": "Prismark 2025全球IC载板市场报告", "英伟达AI芯片ABF载板供应商": "英伟达供应链披露/行业拆解报告"}, "rating": 4, "is_leader": true}, {"code": "002916", "name": "深南电路", "name_en": "Shennan Circuits", "type": "A股", "role": "国产IC载板/PCB龙头，华为昇腾/中芯国际国产芯片封装基板核心供应商——正在突破ABF载板技术，从FC-BGA载板向ABF升级，华为\"去美化\"封测材料核心承接方", "market_share": "中国IC载板市占率约10-15%（国产第一）；全球IC载板排名约第十；华为昇腾封装基板主供应商", "highlight": "FC-BGA载板（Flip Chip Ball Grid Array）已量产供应华为/中芯国际；ABF载板研发推进中（目标2026年量产）；2025年IC载板业务收入约50亿元；PCB+IC载板+电子装联三大业务", "revenue": "2025年营收约175亿元，IC载板约50亿元，整体毛利率约24%", "exchange": "深交所", "evidence": {"华为昇腾封装基板供应商": "深南电路投资者关系活动记录/供应链信息", "国产IC载板国产第一": "中国电子电路行业协会(CPCA)数据", "FC-BGA载板已量产": "深南电路2025年年度报告"}, "data_note": "ABF载板尚未量产（预计2026年），目前FC-BGA载板主要面向中低端AI芯片/SOC，高端ABF载板仍依赖欣兴电子/Ibiden进口", "rating": 3, "is_leader": true}, {"code": "002436", "name": "兴森科技", "name_en": "Fastprint Technology", "type": "A股", "role": "国产IC载板第二梯队，主要聚焦BT载板（存储芯片/射频芯片封装），正在向ABF载板升级——配合华为/长鑫存储等国产芯片企业突破封装基板瓶颈", "market_share": "国产BT载板领先企业；ABF载板在建中（珠海/广州基地），尚未量产；国内IC载板市占率约5-8%", "highlight": "BT载板已量产供应长鑫存储/兆易创新/紫光展锐等；ABF载板项目在建（珠海+广州基地，规划月产能5,000平方米）；2025年IC载板收入约18亿元", "revenue": "2025年营收约60亿元，IC载板约18亿元，毛利率约22%", "exchange": "深交所", "evidence": {"BT载板已量产供应长鑫存储": "兴森科技年度报告/客户公告", "ABF载板在建中": "兴森科技项目投资公告/珠海/广州基地建设进展"}, "data_note": "ABF载板量产时间表不确定（取决于设备采购+良率爬坡）；IC载板业务体量较小（18亿元），规模效应尚未体现", "rating": 2, "is_leader": false}], "competition_status": "全球ABF载板由日本/台湾垄断（欣兴/Ibiden/新光电气/AT&S合计约60%+），国产深南电路/兴森科技从FC-BGA起步向ABF升级——华为昇腾去美化封测材料替代大方向确定但进度缓慢"}]}, {"name": "液冷技术", "name_en": "Liquid Cooling Technology", "description": "为物理AI高功耗算力设备提供精密温控解决方案，解决智算中心散热难题", "stocks": [{"code": "002837", "name": "英维克", "name_en": "Envicool", "type": "A股", "role": "英伟达MGX生态合作伙伴，专注AI算力设备精密温控，液冷产品UQD/MQD通过英伟达MGX生态兼容性认证", "market_share": "英伟达MGX生态兼容性认证；中国数据中心温控散热行业前三（与维谛、申菱环境合计43%份额）；全链条液冷部件+海外CSP客户（Google框架订单）", "highlight": "智算中心迈入兆瓦级时代，液冷技术成为散热关键", "revenue": "2024年营收约36亿元", "exchange": "深交所", "evidence": {"MGX生态合作伙伴认证": "英维克官方公告/英伟达MGX生态伙伴名单", "液冷业务营收占比不足8%": "英维克2024年年度报告业务拆分", "2024年营收约36亿元": "英维克2024年年度报告"}, "data_note": "【已修正】代码从002802修正为002837；合作关系从“英伟达认证液冷技术龙头”修正为MGX生态合作伙伴；液冷业务营收占比不足8%，非英伟达直接供应商", "rating": 2, "is_leader": true}, {"code": "872808", "name": "曙光数创", "name_en": "Sugon DataEnergy", "type": "A股", "role": "国内算力中心液冷绝对龙头，浸没+冷板双技术路线，中科曙光子公司", "market_share": "中国算力中心液冷市场市占率超50%（中国电子技术标准化研究院），浸没式液冷细分领域绝对第一，连续多年蝉联第一", "highlight": "C8000浸没相变液冷V3.0单机柜功率超900kW，支撑全球首个640卡超节点大规模落地，PUE最低1.04；客户覆盖字节/阿里/腾讯/百度/快手；海外已落地马来西亚、日本", "revenue": "2025年营收8.82亿元（+74.29%），浸没液冷4.58亿元（+370.58%）", "exchange": "北交所", "evidence": {"2025年营收8.82亿元（+74.29%）": "曙光数创2025年年度报告", "液冷市占率超50%连续多年第一": "中国电子技术标准化研究院数据中心液冷市场报告", "C8000浸没液冷单机柜640卡超节点": "曙光数创2025年产品发布会/年报"}, "rating": 4, "is_leader": true}, {"code": "300499", "name": "高澜股份", "name_en": "Goaland Energy", "type": "A股", "role": "特高压纯水冷却设备龙头，冷板+浸没双液冷方案提供商，数据中心液冷打造第二成长曲线", "market_share": "特高压直流纯水冷却设备国内第一；数据中心液冷业务仍在放量爬坡阶段，市占率约5-10%", "highlight": "具备液冷全链条一站式能力（液冷板/CDU/TANK/管网/冷塔）；客户含字节/阿里/腾讯/浪潮/中兴/新华三；美国子公司布局北美算力液冷市场", "revenue": "2025年营收约10.39亿元，扭亏为盈；在手订单11.39亿元（截至2025.6.30）", "exchange": "深交所创业板", "evidence": {"2025年营收约10.39亿元": "高澜股份2025年年度报告/券商研报一致预期", "专精特新小巨人+制造业单项冠军": "工信部认定公告", "美国子公司布局北美算力液冷": "高澜股份投资者关系活动记录"}, "data_note": "数据中心液冷业务2025H1同比-8.73%，仍处放量爬坡阶段；是否进入英伟达产业链尚待确认", "rating": 3, "is_leader": false}, {"code": "301018", "name": "申菱环境", "name_en": "Shenling Environment", "type": "A股", "role": "中国液冷数据中心CDU（冷量分配单元）龙头，赛迪顾问排名双料第一（智算行业液冷+数据中心液冷CDU），垂直一体化温控方案商", "market_share": "中国液冷数据中心CDU市占率第一（赛迪顾问）；中国智算行业液冷数据中心市占率第一（赛迪顾问）；温控散热行业前三（与英维克、维谛合计43%份额）", "is_leader": true, "highlight": "2025年营收42.09亿元（+39.5%），液冷产品同比+190%；2026年液冷订单已达38亿元；覆盖高效冷源→CDU→预制化管网→液冷机柜全链条；核心客户含华为/字节/腾讯/阿里/秦淮数据", "revenue": "2025年营收42.09亿元（+39.5%），归母净利润2.17亿元（+87.6%）", "exchange": "深交所创业板", "evidence": {"2025年营收42.09亿元": "申菱环境2025年年度报告", "CDU市占率双料第一": "赛迪顾问2025年中国液冷数据中心市场报告", "液冷产品同比+190%": "申菱环境2025年年报"}, "rating": 4}], "competition_status": "一超多强（英维克龙头，申菱环境CDU黑马，曙光数创浸没领先），冷板式液冷为主流（80-90%份额），浸没式为未来方向但渗透率仍低"}, {"name": "仿真引擎", "name_en": "Simulation Engine", "description": "提供多物理场CAE仿真能力，为机器人和自动驾驶提供虚拟训练环境", "stocks": [{"code": "ANSS", "name": "Ansys", "name_en": "Ansys (Synopsys子公司)", "type": "美股", "role": "全球CAE仿真软件绝对龙头，物理AI仿真基础设施核心供应商，2025年被Synopsys以350亿美元收购", "market_share": "全球CAE市场占有率约25-30%，结构分析/流体仿真/电磁仿真三大领域均居首位，2025年被Synopsys以350亿美元收购，与新思科技合并后构建从芯片到系统的统一仿真平台", "highlight": "Twin Builder数字孪生构建平台；与NVIDIA Omniverse/Isaac Sim深度集成，为物理AI训练提供高保真虚拟环境；Synopsys收购后EDA+CAE整合强化全流程仿真能力", "revenue": "FY2024（截至2024年12月）营收约26.4亿美元", "exchange": "纳斯达克（被Synopsys收购后退市）", "evidence": {"全球CAE市占率约25-30%": "Gartner/CIMdata 2024全球CAE市场报告", "FY2024营收约26.4亿美元": "Ansys FY2024年度报告 (SEC 10-K)", "被Synopsys以350亿美元收购": "Synopsys 2025年1月收购公告; SEC S-4注册声明", "与NVIDIA Omniverse集成": "Ansys官方技术合作公告"}, "rating": 5, "is_leader": true}, {"code": "DASTY", "name": "达索系统", "name_en": "Dassault Systèmes", "type": "美股", "role": "3DEXPERIENCE平台构建者，SIMULIA多物理场仿真+虚拟孪生双轮驱动，2026年与NVIDIA签署战略合作共建工业AI架构", "market_share": "全球PLM市场排名第二；SIMULIA在多物理场仿真领域与Ansys并列为第一梯队；与西门子、新思科技构成全球仿真三巨头", "highlight": "与NVIDIA共建Omniverse+3DEXPERIENCE工业AI共享架构；虚拟孪生(Virtual Twin)技术为物理AI提供高保真训练环境；2025年在上海开设大中华区首个3DEXPERIENCE Lab", "revenue": "FY2024（截至2024年12月）营收约62亿欧元（约67亿美元）", "exchange": "纳斯达克ADR / 泛欧交易所(DSY.PA)", "evidence": {"FY2024营收约62亿欧元": "Dassault Systèmes FY2024年度报告", "与NVIDIA战略合作": "Dassault Systèmes 2026年2月官方公告", "全球PLM市场排名第二": "CIMdata 2024全球PLM市场报告"}, "rating": 4, "is_leader": true}, {"code": "688507", "name": "索辰科技", "name_en": "Suochen Technology", "type": "A股", "role": "国内CAE仿真软件绝对龙头，A股覆盖学科最全的多物理场CAE仿真软件厂商", "market_share": "国内CAE仿真软件龙头，A股覆盖学科最全的多物理场CAE仿真软件厂商；2025年CAE软件收入2.84亿元（国内CAE市场份额估计约5-8%），物理AI首次贡献收入5816万元", "highlight": "自研“天工·开物”物理AI平台，2025年物理AI首次贡献收入5816万元，超额完成股权激励年度目标3000万元", "revenue": "2025年总营收约4.66亿元（CAE软件2.84亿元占61%）", "exchange": "上交所科创板", "evidence": {"2025年CAE软件收入2.84亿元": "索辰科技2025年年度报告", "物理AI收入5816万元": "索辰科技2025年年度报告/股权激励达成公告", "毛利率86.33%": "索辰科技2025年年度报告"}, "data_note": "【已修正】“唯一”表述改为“覆盖学科最全”；物理AI产品于2025年3月发布，2024年无独立收入基数，原“同比增长240%”已删除", "rating": 4, "is_leader": true}, {"code": "—", "name": "西门子", "name_en": "Siemens Digital Industries", "type": "未上市（Siemens AG子公司）", "role": "全球工业软件绝对霸主，Simcenter系列CAE产品覆盖全物理场仿真，2025年收购Altair（HyperWorks）后构建了从CAD→CAE→PLM→数字孪生的最完整闭环生态", "market_share": "全球CAE市场第一梯队（与达索、新思科技并列），在汽车/航空航天关键领域份额估计超30%；中国工业软件整体市占率约30%", "is_leader": true, "highlight": "Simcenter Star-CCM+为全球最流行的CFD求解器之一；收购Altair后补齐结构仿真+拓扑优化能力；Xcelerator平台构建数字孪生全生命周期闭环；与NVIDIA Omniverse合作工业AI", "revenue": "西门子数字化工业集团FY2025营收约230亿欧元（约250亿美元），CAE/仿真为其中一部分", "exchange": "法兰克福证券交易所（SIE.DE）/ 母公司Siemens AG", "evidence": {"全球工业软件市占率约30%": "赛迪顾问2025年工业软件市场报告", "2025年收购Altair Engineering": "西门子2025年3月收购公告", "Xcelerator平台": "西门子官方产品文档"}, "rating": 5}, {"code": "688083", "name": "中望软件", "name_en": "ZWSoft", "type": "A股", "role": "中国工业软件龙头，国产CAD+CAE+PLM一体化厂商，CAD全球用户突破1200万，软件价格仅为进口1/3，国产替代核心标的", "market_share": "国产CAD/CAE一体化龙头；中国CAE市场份额估计约3-5%（国产替代加速中，2021-2026年国产化率从5%→30%）", "is_leader": true, "highlight": "中望CAD全球用户突破1200万（2026年）；ZWSim系列覆盖结构/CFD/电磁仿真；价格仅为进口软件的1/3，在中小企业和教育市场快速渗透", "revenue": "2025年营收约10亿元（预估）", "exchange": "上交所科创板", "evidence": {"CAD全球用户突破1200万": "中望软件2026年官方数据", "国产化率从5%→30%": "赛迪顾问2026年中国工业软件报告"}, "data_note": "CAE业务仍较薄弱（CAD为主），多物理场仿真能力与Ansys/西门子差距明显；主要覆盖中小企业市场", "rating": 3}], "competition_status": "寡头格局（全球Top3控制70%+市场），2025年三大并购（Synopsys收购Ansys/西门子收购Altair/Cadence收购MSC）重塑行业版图，国产化率从5%突破至30%但高端领域仍有差距"}]}, {"name": "模型与平台层", "name_en": "Model & Platform Layer", "subtitle": "物理AI大脑", "description": "模型与平台层是物理AI产业链的“认知中枢”，负责将物理世界的规律融入AI模型，构建VLM（视觉语言模型）、VLA（视觉语言动作模型）和世界模型三大技术路径。", "children": [{"name": "世界模型", "name_en": "World Model", "description": "构建物理世界的数字孪生与仿真模型，为AI提供物理直觉能力", "stocks": [{"code": "06651.HK", "name": "五一视界", "name_en": "51World", "type": "港股", "role": "港股“物理AI第一股”，发布全球首款“物理直觉”世界模型51World Model", "market_share": "智驾仿真市占率53.5%（弗若斯特沙利文数据，中国端到端高阶智驾仿真及数据平台市场）；港股\"物理AI第一股\"", "highlight": "2025年营收3.48亿元同比增长21%；深度配套高阶自动驾驶与人形机器人仿真测试，覆盖全球TOP20车企中的55%", "revenue": "2025年营收3.48亿元（+21%）", "exchange": "港交所", "evidence": {"2025年营收3.48亿元（+21%）": "五一视界2025年年度报告（港交所公告）", "智驾仿真市占率53.5%": "弗若斯特沙利文(Frost & Sullivan)行业研究报告", "覆盖全球TOP20车企55%": "五一视界招股书/年度报告"}, "rating": 4, "is_leader": true}, {"code": "—", "name": "World Labs", "name_en": "World Labs", "type": "未上市", "role": "李飞飞创立，全球世界模型赛道估值最高的公司（~50亿美元），空间智能（Spatial Intelligence）定义者，让AI理解、生成并与3D世界交互", "market_share": "全球世界模型赛道估值第一（~50亿美元）；李飞飞创立，空间智能（Spatial Intelligence）定义者，产品Marble已商业化（$20-95/月订阅）", "highlight": "成立16个月估值从2亿→50亿美元（+5倍）；Marble可通过图片/视频/文字生成连贯3D世界；投资方含NVIDIA/AMD/a16z/Autodesk/淡马锡；技术基于NeRF+3D Gaussian Splatting，可输出至机器人仿真训练环境", "revenue": "暂无公开营收；累计融资约13亿美元（2026年初新一轮10亿美元），2024年9月融资2.3亿美元", "exchange": "未上市（Private），总部旧金山", "evidence": {"估值约50亿美元": "2026年1月融资报道（Autodesk领投2亿美元）", "Marble产品发布": "World Labs 2025年11月官方发布", "李飞飞创立World Labs": "2024年4月公司成立公告", "NVIDIA/AMD参投": "World Labs融资公告/媒体报道"}, "rating": 5, "is_leader": true}, {"code": "—", "name": "Genesis", "name_en": "Genesis (CMU/清华联合项目)", "type": "未上市", "role": "全球首个开源通用物理仿真引擎，由CMU/清华/斯坦福等联合开发，2024年底发布后GitHub star数月内突破20k，被视为物理AI仿真基础设施的开源标杆", "market_share": "开源物理仿真平台GitHub增长最快项目之一；学术/科研领域影响力迅速上升", "is_leader": false, "highlight": "开源+GPU加速+Pythonic API，支持大规模多体动力学仿真，仿真速度较传统求解器（如MuJoCo）提升数个数量级；已与多个机器人研究实验室合作；代表世界模型“物理仿真派”技术路线", "revenue": "暂无营收（开源项目，MIT License），由非营利组织运营", "exchange": "未上市（开源项目/非营利组织）", "evidence": {"GitHub star 20k+": "Genesis GitHub仓库", "与CMU/清华/斯坦福联合": "Genesis项目官网/论文"}, "data_note": "开源项目非商业公司，不构成传统意义上的“标的”；列入是为了标注物理仿真这一重要技术路线", "rating": 3}], "competition_status": "混战阶段（技术路线多元：视频生成派/3D原生派/物理仿真派/端到端派四大流派并行探索），尚无统一技术标准，头部公司估值高但均处于商业化早期"}, {"name": "VLA/VLM平台", "name_en": "VLA/VLM Platform", "description": "视觉语言动作模型与视觉语言模型平台，实现从感知到动作的转化闭环", "stocks": [{"code": "GOOGL", "name": "Google DeepMind", "name_en": "Alphabet / Google DeepMind", "type": "美股", "role": "Gemini Robotics/RT-2全球VLA模型技术先驱，物理AI大模型上游定义者，全球首个将大语言模型知识迁移到机器人控制的VLA模型(RT-2)创造者", "market_share": "全球AI大模型市场份额前三（与OpenAI、Anthropic并列）；VLA/具身智能模型领域学术影响力最大", "highlight": "RT-2（2023）实现零样本泛化机器人控制；Gemini Robotics（2025）基于Gemini多模态模型构建具身智能平台；Gemini Robotics On-Device支持端侧推理低延迟执行", "revenue": "Alphabet 2024年总营收约3,500亿美元，Google Cloud（含DeepMind AI服务）432亿美元；DeepMind本身不单独披露营收", "exchange": "纳斯达克", "evidence": {"RT-2全球首个VLA模型": "Google DeepMind 2023年论文 'RT-2: Vision-Language-Action Models Transfer Web Knowledge to Robotic Control'", "Gemini Robotics 2025发布": "Google DeepMind 2025年官方博客/技术报告", "Alphabet 2024年总营收": "Alphabet FY2024 10-K Filing (SEC)", "Google Cloud营收432亿美元": "Alphabet FY2024 10-K, Segment Revenue"}, "rating": 5, "is_leader": true}, {"code": "300825", "name": "阿尔特", "name_en": "IAT Automobile", "type": "A股", "role": "英伟达Solution Advisor（顾问级）合作伙伴，基于Omniverse和Isaac Sim平台进行汽车研发与机器人仿真", "market_share": "英伟达Solution Advisor（顾问级）合作伙伴；已落地Apollo RT6、文远小巴等多个L4级自动驾驶项目；机器人业务仍处早期培育阶段，无明确市占率", "highlight": "将大模型+数字孪生+物理仿真应用于汽车研发、自动驾驶训练", "revenue": "2024年营收约11.5亿元", "exchange": "深交所创业板", "evidence": {"英伟达Solution Advisor合作伙伴": "阿尔特官方公告/英伟达合作伙伴名录", "2024年营收约11.5亿元": "阿尔特2024年年度报告"}, "data_note": "【已修正】原“深度绑定英伟达”过度渲染，修正为实际合作关系级别；机器人业务仍处早期培育阶段", "rating": 2, "is_leader": false}, {"code": "—", "name": "Physical Intelligence", "name_en": "Physical Intelligence (Pi)", "type": "未上市", "role": "「物理世界的OpenAI」，全球最受关注的机器人通用基础模型公司。π系列VLA模型已迭代至π₀.6，实现亚毫米级精度操作（RL Token技术，15分钟训练）和90%+任务成功率", "market_share": "估值约140亿美元；机器人基础模型赛道估值最高；Skild Brain为omnibodied设计（同一AI驱动任意形态机器人）", "highlight": "2年估值从4亿→24亿→56亿→110亿美元+；2026年C轮洽谈10亿美元（Founders Fund领投）；引入RL Token（15分钟训练实现亚毫米级精度）和MEM多尺度记忆系统（>10分钟连续作业）；投资方含Jeff Bezos、OpenAI、Alphabet、NVIDIA", "revenue": "暂无产品和收入，仍处于模型研发阶段；累计融资超10亿美元", "exchange": "未上市（Private）", "evidence": {"π₀.6模型90%+任务成功率": "Physical Intelligence官方博客/技术报告", "C轮估值110亿美元+": "TechCrunch/Bloomberg融资报道", "RL Token和MEM系统": "Physical Intelligence 2025年技术论文"}, "rating": 5, "is_leader": false}, {"code": "—", "name": "Wayve", "name_en": "Wayve", "type": "未上市", "role": "端到端具身AI驾驶模型先驱，单一神经网络直接从传感器映射到驾驶动作，无需高精地图即可零样本泛化至新城市，\"驾驶的GPT时刻\"推动者", "market_share": "估值约86亿美元；AI Driver模型已在70+国家、500+城市测试，219城市零本地数据零样本泛化", "highlight": "2025年完成12亿美元D轮融资（NVIDIA/SoftBank/Microsoft/奔驰/Nissan/Stellantis/Uber参投）；Nissan量产协议2027年装车；与Uber合作2026年伦敦启动L4 Robotaxi；NVIDIA DRIVE Thor平台加持", "revenue": "暂无公开营收；累计融资超25亿美元", "exchange": "未上市（Private），总部伦敦，2017年成立", "evidence": {"D轮融资12亿美元估值86亿": "Wayve 2025年D轮融资公告", "Nissan 2027年量产协议": "Wayve/Nissan 2025年联合公告", "Uber伦敦L4 Robotaxi合作": "Wayve/Uber 2025年合作公告", "500+城市零样本泛化": "Wayve AI-500路测报告"}, "rating": 4, "is_leader": false}, {"code": "—", "name": "Skild AI", "name_en": "Skild AI", "type": "未上市", "role": "\"机器人通用大脑\"构建者，开发不依赖特定硬件的机器人基础模型（Skild Brain），让任何形态的机器人学会感知与决策", "market_share": "估值约140亿美元；机器人基础模型赛道估值最高；Skild Brain为omnibodied设计（同一AI驱动任意形态机器人）", "highlight": "2025年7月发布首个通用模型Skild Brain，机器人可拾取物体/爬楼梯/跨环境适应；omnibodied设计——同一AI驱动任意形态机器人；成立2年融资超18亿美元", "revenue": "暂无营收，处于模型研发阶段；累计融资超18亿美元", "exchange": "未上市（Private），2023年成立，前Meta AI研究员创立", "evidence": {"C轮估值140亿美元": "SoftBank/NVIDIA 2025年12月投资报道", "Skild Brain发布": "Skild AI 2025年7月官方发布", "前Meta AI研究员创立": "Skild AI公司介绍/Crunchbase"}, "rating": 4, "is_leader": false}], "competition_status": "混战阶段（VLA基础模型技术路线尚未收敛，世界模型派vs端到端派vs模块化派并行探索），头部公司估值极高（Physical Intelligence 110亿美元+，Skild AI 140亿美元）但均无规模化商业收入，尚处\"军备竞赛\"期"}]}, {"name": "硬件层", "name_en": "Hardware Layer", "subtitle": "感知与执行", "description": "硬件层是连接数字世界与物理世界的桥梁，包含感知系统（“眼睛”与“触觉”）和执行系统（“肌肉”与“关节”），为物理AI提供精确的环境理解与精准的物理操作能力。", "children": [{"name": "感知硬件", "name_en": "Perception Hardware", "description": "为物理AI提供3D视觉感知与动作捕捉能力，实现精确的环境理解", "sub_domains": [{"name": "3D视觉感知", "name_en": "3D Vision Perception", "stocks": [{"code": "688322", "name": "奥比中光", "name_en": "Orbbec", "type": "A股", "role": "全球少数掌握六大3D视觉技术的企业（结构光/iToF/双目/dToF/激光雷达/工业三维测量），拥有自主知识产权的深度引擎算法", "market_share": "国内服务机器人市场占有率超70%；韩国商用及工业移动机器人3D视觉市场份额达72%（Interact Analysis）", "highlight": "2025年营收9.41亿元同比增长66.66%，成功扭亏为盈；已进入优必选、智元、天工、乐聚等主流人形机器人供应链", "revenue": "2025年营收9.41亿元（+66.66%），扭亏为盈", "exchange": "上交所科创板", "evidence": {"2025年营收9.41亿元（+66.66%）": "奥比中光2025年年度报告", "国内服务机器人市占率超70%": "Interact Analysis 中国服务机器人3D视觉市场报告", "韩国市占率72%": "Interact Analysis 韩国移动机器人3D视觉市场报告"}, "rating": 4, "is_leader": true}], "competition_status": "奥比中光国内绝对领先（服务机器人市占率超70%），但全球市场仍有Intel RealSense/微软Kinect/ Stereolabs等竞争对手，技术路线从结构光向iToF/dToF多元演进"}, {"name": "动作捕捉", "name_en": "Motion Capture", "stocks": [{"code": "688400", "name": "凌云光", "name_en": "LUSTER LightTech", "type": "A股", "role": "国内机器视觉龙头，机器视觉行业整体销售额国内第一（CMVU 2021年数据），消费电子可配置视觉系统国产第一", "market_share": "消费电子可配置视觉系统市占率22.4%，国产第一（整体第三，次于康耐视、基恩士CMVU 2021年数据）；机器视觉行业整体销售额国内第一", "highlight": "LCubor系列工业3D相机和Bumblebee系列双目立体视觉系统赋能机器人物理空间感知；OptiTrack/Swift系列提供运动捕捉能力", "revenue": "2024年营收约28.8亿元", "exchange": "上交所科创板", "evidence": {"消费电子可配置视觉系统市占率22.4%国产第一": "CMVU 2021年中国机器视觉市场报告", "2024年营收约28.8亿元": "凌云光2024年年度报告"}, "data_note": "【已修正】原报告将奥比中光的Femto/Gemini产品误归为凌云光产品，已修正为凌云光自有产品线；市占率从“第一”修正为“国产第一”", "rating": 3, "is_leader": false}], "competition_status": "混战阶段（高端动捕被Vicon/OptiTrack等海外品牌主导，国产凌云光/诺亦腾在中低端和特定行业差异化竞争），人形机器人训练数据采集催生新增需求"}, {"name": "激光雷达", "name_en": "LiDAR", "description": "激光雷达是物理AI感知系统的核心传感器，为机器人和自动驾驶提供高精度3D点云数据", "stocks": [{"code": "HSAI", "name": "禾赛科技", "name_en": "Hesai Technology", "type": "美股", "role": "全球首家实现全年GAAP盈利的激光雷达企业，ADAS+机器人双轮驱动，NVIDIA DRIVE Hyperion 10主激光雷达合作伙伴", "market_share": "全球ADAS车载激光雷达市占率超40%，中国第一（盖世汽车/GGII/Yole数据）；2026Q1中国前向主激光雷达装机份额34.9%第一（盖世汽车）；机器人激光雷达多细分领域第一", "highlight": "2025年总交付162万台（+222.9%），其中机器人激光雷达23.9万台（+425.8%）；客户覆盖宇树/小马智行/文远知行/萝卜快跑/追觅科技（1000万颗独家订单）；与NVIDIA Halos安全实验室合作", "revenue": "2025年营收30.3亿元（+45.8%），GAAP净利润4.4亿元（扭亏为盈），毛利率41.8%", "exchange": "纳斯达克（港股02525.HK）", "evidence": {"2025年营收30.3亿元GAAP净利润4.4亿元": "禾赛科技2025年Q4及全年财报", "ADAS激光雷达市占率超40%中国第一": "盖世汽车研究院/GGII/Yole Group 2025年报告", "NVIDIA DRIVE Hyperion 10合作伙伴": "NVIDIA/禾赛科技官方合作公告", "总交付162万台": "禾赛科技2025年全年财报交付数据"}, "rating": 5, "is_leader": true}, {"code": "2498.HK", "name": "速腾聚创", "name_en": "RoboSense", "type": "港股", "role": "全球ADAS激光雷达重要供应商，自研SPAD-SoC芯片大幅降本（从1.8万元降至1500元），合资品牌激光雷达供应商冠军（超70%份额），机器人业务为第二增长曲线", "market_share": "2025年中国激光雷达前向主雷达份额约23.5%（高工智能汽车）；2026Q1下滑至11.0%第四（盖世汽车）；合资品牌激光雷达供应商份额超70%第一", "is_leader": false, "highlight": "2025年ADAS激光雷达出货约60.9万台；机器人及其他30.3万台（同比+1141%）；Q4单季盈利1.06亿元（全年净亏1.46亿元）；自研SPAD-SoC芯片实现降本；累计35家车企167款车型定点", "revenue": "2025年营收19.41亿元，毛利率约19.1%", "exchange": "港交所", "evidence": {"2025年营收19.41亿元": "速腾聚创2025年年度报告", "2026Q1份额11.0%": "盖世汽车研究院2026年Q1数据", "自研SPAD-SoC芯片": "速腾聚创2025年产品发布会"}, "data_note": "市场份额从2024年初的行业第一（33.5%）持续下滑至2026Q1第四（11.0%），面临产品线单一+以价换量困境；机器人业务增速快但单价暴跌（8100→2300元）", "rating": 3}], "competition_status": "寡头格局（禾赛+华为两家占前向主激光雷达67-69%），速腾聚创从行业第一跌至第四（11%），图达通2026Q1反超速腾升至第三（16.8%），行业进入千线时代"}, {"name": "力觉传感", "name_en": "Force/Tactile Sensing", "description": "六维力/力矩传感器是机器人触觉感知的核心部件，为物理AI提供精确的力反馈与柔顺控制能力", "stocks": [{"code": "—", "name": "坤维科技", "name_en": "Kunwei Technology", "type": "未上市", "role": "国内六维力传感器头部企业，高精度力控解决方案提供商，核心团队拥有近20年航天科研背景", "market_share": "国内六维力传感器头部企业，协作机器人末端附件市场占有率超80%；人形机器人六维力传感器已量产并出口北美；与宇立仪器、蓝点触控并列国产第一梯队", "highlight": "六维力传感器准度0.5%（含串扰），远超行业2-2.5%水平；已与国内头部人形机器人企业全面合作；小米人形机器人手腕部位采用KWR63系列；股东含小米产投/高瓴创投/深创投/汇川产投/三花控股/舜宇", "revenue": "未公开披露；融资至B轮（2025.2），累计投资方含小米/高瓴/深创投/汇川/三花/舜宇等", "exchange": "未上市（Private），成立于2018年", "evidence": {"协作机器人末端市占率超80%": "高工机器人产业研究所(GGII)数据", "六维力传感器准度0.5%": "坤维科技官方产品规格书", "小米人形机器人已采用KWR63": "小米机器人供应链公开信息/坤维科技官方", "2025年B轮融资小米高瓴领投": "坤维科技B轮融资公告（2025.2）"}, "rating": 4, "is_leader": true}], "competition_status": "混战阶段（全球ATI仍为技术标杆，国产坤维/宇立/蓝点触控三强追赶），人形机器人需求爆发驱动产能快速爬坡，国产在协作机器人领域已占主导，价格仅为进口1/3-1/5"}]}, {"name": "执行硬件", "name_en": "Execution Hardware", "description": "为物理AI提供精准的物理操作能力，包括核心零部件和机器人控制器", "sub_domains": [{"name": "减速器", "name_en": "Precision Reducer", "description": "谐波减速器是机器人旋转关节的核心传动部件，决定精度与寿命", "stocks": [{"code": "6324.T", "name": "Harmonic Drive Systems", "name_en": "Harmonic Drive Systems", "type": "日股", "role": "全球谐波减速器发明者与绝对龙头，与绿的谐波构成全球“双寡头”格局，谐波传动原理发明者（1960年代Musim专利）", "market_share": "全球谐波减速器市场份额约35-40%；日本工业机器人市场占有率超60%", "highlight": "谐波传动原理发明者，技术代际与品牌优势领先；日本工业机器人市场占有率超60%；精密行星齿轮Harmonic Planetary系列", "revenue": "FY2026（推算）约680-700亿日元（约4.7亿美元）", "exchange": "东京证券交易所", "evidence": {"全球谐波减速器市占率约35-40%": "BCC Research 2024全球精密减速器市场报告", "日本工业机器人市场占有率超60%": "日本机器人工业会(JARA)统计数据", "FY2026营收约680-700亿日元": "HDSI FY2026 Q4季报（营收173.7亿日元）推算"}, "rating": 4, "is_leader": true}, {"code": "688017", "name": "绿的谐波", "name_en": "Leaderdrive", "type": "A股", "role": "国内首家完全拥有自主知识产权的谐波减速器企业，产品技术达世界前列水准，国产第一", "market_share": "国产减速器市场占有率约30%-40%（摩根大通估计），国产第一", "highlight": "2025年谐波减速器销量42.52万台（同比+72.48%），2026年锚定百万台级产能规划，已进入特斯拉、优必选供应链", "revenue": "2025年营收5.71亿元（+47.31%），谐波减速器销量42.52万台（+72.48%）", "exchange": "上交所科创板", "evidence": {"2025年营收5.71亿元": "绿的谐波2025年年度报告（巨潮资讯, 2026-04-23）", "谐波减速器销量425,158台（+72.48%）": "绿的谐波2025年年度报告，产销量情况分析表", "国产减速器市占率约30-40%": "摩根大通(J.P. Morgan)行业研究报告", "已进入特斯拉供应链": "绿的谐波投资者关系活动记录"}, "data_note": "【已修正】出货量从“接近50万台”修正为精确数据42.52万台；市占率从“超35%”修正为“约30%-40%”", "rating": 5, "is_leader": true}, {"code": "002472", "name": "双环传动", "name_en": "Shuanghuan Transmission", "type": "A股", "role": "国内RV减速器绝对龙头，子公司环动科技市占率25%打破纳博特斯克垄断，已进入特斯拉Optimus供应链", "market_share": "中国工业机器人RV减速器市占率25%国产第一（2024年，MIR数据），仅次于纳博特斯克（33.6%）位列中国第二", "is_leader": true, "highlight": "环动科技RV减速器国内市占率25%；已进入特斯拉Optimus供应链；重载RV减速器技术壁垒极高，一旦通过大客户认证粘性极强", "revenue": "2025年营收约90亿元（预估，含齿轮主业）", "exchange": "深交所", "evidence": {"RV减速器市占率25%国产第一": "MIR睿工业2024年中国RV减速器市场报告", "进入特斯拉Optimus供应链": "券商研报/供应链公开信息"}, "data_note": "RV减速器为子公司环动科技主营业务，双环传动整体营收含传统汽车齿轮；环动科技正计划分拆科创板IPO", "rating": 4}], "competition_status": "双寡头格局（日本Harmonic Drive与绿的谐波全球谐波减速器双寡头），RV减速器纳博特斯克仍领先但国产替代加速（双环传动市占率已达25%）"}, {"name": "伺服与驱动", "name_en": "Servo & Drive", "description": "伺服电机与驱动系统是机器人的动力来源，决定力控精度与响应速度", "stocks": [{"code": "6506.T", "name": "安川电机", "name_en": "Yaskawa Electric", "type": "日股", "role": "全球伺服电机龙头、四大工业机器人巨头之一，与汇川技术构成全球伺服领域核心对标", "market_share": "全球伺服电机市场份额约15-20%（常年位居全球第一或第二）；工业机器人全球市占率约10%", "highlight": "Sigma系列伺服驱动器/电机（Sigma-7/Sigma-X）全球标杆；Motoman系列工业机器人；近年布局人形机器人伺服关节模组；AC伺服领域技术积累超50年", "revenue": "FY2026（推算）约5,700-5,900亿日元（约39亿美元）", "exchange": "东京证券交易所", "evidence": {"全球伺服电机市占率约15-20%": "Mordor Intelligence 2024全球伺服电机市场报告", "FY2026营收约5,700-5,900亿日元": "安川电机FY2026 Q4季报（营收1,469亿日元）推算", "工业机器人全球市占率约10%": "IFR 2024世界机器人报告"}, "rating": 3, "is_leader": true}, {"code": "300124", "name": "汇川技术", "name_en": "Inovance Technology", "type": "A股", "role": "工控界“小华为”，伺服系统和高精度运动控制技术领先", "market_share": "国内伺服电机市场占有率第一（约32%，睿工业数据，遥遥领先第二名西门子约9.2%）；低压变频器、SCARA机器人、电梯电控系统也均为国内/全球第一", "highlight": "运动控制技术确保物理AI执行端高精度动作；2025年营收451.05亿元（+21.77%）", "revenue": "2025年营收451.05亿元（+21.77%），伺服系统约68.5亿元", "exchange": "深交所创业板", "evidence": {"国内伺服电机市占率约32%第一": "睿工业2025年中国伺服电机市场报告", "2025年营收451.05亿元（+21.77%）": "汇川技术2025年年度报告摘要（巨潮资讯, 2026-04-28）", "伺服系统收入约68.5亿元": "汇川技术2025年年度报告摘要"}, "rating": 4, "is_leader": true}], "competition_status": "寡头格局（全球安川/松下/三菱日系主导，中国汇川技术后来居上），国产伺服在中低端已占主导，高端精密伺服仍有差距"}, {"name": "机电执行器", "name_en": "Electromechanical Actuators", "description": "集成电机+传动+传感的旋转/直线执行器，是人形机器人关节的集成化方向", "stocks": [{"code": "002050", "name": "三花智控", "name_en": "Sanhua Intelligent Controls", "type": "A股", "role": "全球热管理阀件龙头，技术同源延伸至人形机器人机电执行器（特斯拉Optimus旋转+直线执行器核心供应商）和AI数据中心液冷（阀/泵/换热器核心零部件）", "market_share": "空调电子膨胀阀、四通换向阀、车用电子膨胀阀等多项产品全球市占率第一；特斯拉Optimus机电执行器核心供应商，技术同源从热管理阀件延伸至机器人关节", "highlight": "2025年设立机器人事业部；泰国建生产基地支持特斯拉机器人量产；25H1传统制冷业务+25.5%受益于数据中心液冷需求；机构预计2026年机器人业务开始贡献重要收入增量", "revenue": "2025年营收约310.1亿元（+11%），归母净利润约40.6亿元（+31%）", "exchange": "深交所", "evidence": {"2025年营收约310.1亿元": "三花智控2025年年度报告", "特斯拉Optimus机电执行器核心供应商": "浙商证券/东吴证券研报；特斯拉Optimus供应链披露"}, "rating": 4, "is_leader": true}, {"code": "601689", "name": "拓普集团", "name_en": "Tuopu Group", "type": "A股", "role": "特斯拉Optimus电驱执行器（直线+旋转）Tier1供应商，从汽车底盘Tier0.5延伸至人形机器人+AI液冷，\"车+机器人+AI\"三大赛道协同", "market_share": "特斯拉Optimus Gen3电驱执行器（直线+旋转）Tier1供应商；宁波基地电驱执行器年产能30万套但2025年收入仅1359万元（占0.05%）", "highlight": "2016年起为特斯拉核心供应商（营收占比超30%）；AI液冷已获华为/英伟达首批订单15亿元（2026年交付）；同步拓展小鹏、小米机器人客户；正申请港股IPO", "revenue": "2025年营收295.81亿元（+11.21%），机器人执行器收入仅1359万元（占0.05%）", "exchange": "上交所", "evidence": {"2025年营收295.81亿元": "拓普集团2025年年度报告", "机器人执行器收入1359万元": "拓普集团2025年年度报告业务拆分", "AI液冷获华为英伟达订单15亿元": "拓普集团官方公告/投资者关系活动记录", "宁波基地电驱执行器年产能30万套": "拓普集团2024年项目投产公告"}, "data_note": "机器人业务2025年收入仅1359万元（占比0.05%），产能30万套但无大规模订单落地（高盛2025.11调研确认）；AI液冷订单2026年才开始交付；2025年增收不增利（净利润-7.38%）", "rating": 2, "is_leader": false}, {"code": "601100", "name": "恒力液压", "name_en": "Hengli Hydraulic", "type": "A股", "role": "国内液压件绝对龙头，凭借超精密加工能力跨界切入行星滚柱丝杠赛道（人形机器人直线执行器核心部件），技术同源延伸逻辑最强", "market_share": "国内液压件市占率第一（挖掘机油缸市占率超50%）；行星滚柱丝杠处于小批量送样阶段，尚未形成规模市占率", "is_leader": false, "highlight": "人形机器人单台需10-14个行星滚柱丝杠（价值量最大增量之一）；液压领域积累的超精密加工能力（μ级精度）直接复用至丝杠生产；已向多家头部人形机器人客户送样测试", "revenue": "2025年营收约100亿元（预估，液压主业为主）", "exchange": "上交所", "evidence": {"国内液压件市占率第一": "中国液压气动密封件工业协会数据", "行星滚柱丝杠送样": "恒力液压投资者关系活动记录/券商调研"}, "data_note": "行星滚柱丝杠业务处于极早期（送样阶段），短期不贡献收入；液压主业受工程机械周期波动影响", "rating": 3}], "competition_status": "混战阶段（人形机器人机电执行器为全新赛道，技术路线未统一——旋转vs直线、液压vs电动方案并行探索），特斯拉Optimus量产将决定主流技术方向"}, {"name": "机器人控制器", "name_en": "Robot Controller", "stocks": [{"code": "001339", "name": "智微智能", "name_en": "Zhiwei Intelligent", "type": "A股", "role": "AI数智化基座提供商，聚焦具身智能+机器人控制器（工业物联网板块新兴业务）", "market_share": "英伟达NPN合作伙伴；机器人控制器搭载NVIDIA Isaac平台及Jetson Orin/Thor模组；已完成部分客户订单落地（比亚迪/理想汽车），但整体市占率尚低", "highlight": "为英伟达NPN合作伙伴，2025年8月与英伟达全球同步首发智擎EII6300（基于Jetson Thor）", "revenue": "2024年营收约37亿元", "exchange": "深交所", "evidence": {"英伟达NPN合作伙伴": "英伟达NPN合作伙伴名录/智微智能官方公告", "智擎EII6300基于Jetson Thor": "智微智能2025年8月产品发布会", "2024年营收约37亿元": "智微智能2024年年度报告"}, "data_note": "机器人控制器业务处于早期放量阶段，传统主业为行业终端（教育/消费PC）和ICT基础设施", "rating": 2, "is_leader": false}], "competition_status": "混战阶段（控制器方案多元——英伟达Jetson/华为昇腾/高通/自研ASIC等多种芯片平台并存），下游需求碎片化，尚未出现统治性方案"}, {"name": "灵巧手", "name_en": "Dexterous Hand", "description": "灵巧手是人形机器人的核心末端执行器，集空心杯电机、微型传动、精密减速、多维传感于一体，实现类人手的精细化抓取与灵巧操作能力", "stocks": [{"code": "603009", "name": "鸣志电器", "name_en": "Moons' Electric", "type": "A股", "role": "国内空心杯电机龙头，具备空心杯电机自主设计+全自动化产线能力，产品已通过华为/宇树等头部客户验证并实现批量供货", "market_share": "国内空心杯电机市场领先；与华为2012实验室联合研发灵巧手空心杯电机；全球少数具备全系列集成式控制电机能力的厂商之一", "highlight": "2025年收购日本T Motion（安川/TDK系），整合高精度控制技术；空心杯电机+行星减速器+反馈装置集成化供应，全球唯一具备全系列集成式控制电机能力的厂商之一；子公司Technosoft Motion控制技术国际领先", "revenue": "2024年营收约3.6亿港元（空心杯电机业务），整体鸣志电器2024年营收约33.7亿元", "exchange": "上交所", "evidence": {"国内空心杯电机龙头": "鸣志电器2024年年报/券商研报", "华为2012实验室联合研发": "鸣志电器投资者关系活动记录", "收购日本T Motion": "鸣志电器2025年收购公告", "2024年营收约33.7亿元": "鸣志电器2024年年度报告"}, "data_note": "空心杯电机业务占整体营收比例约10%，机器人灵巧手相关收入仍处放量早期", "rating": 4, "is_leader": true}, {"code": "003021", "name": "兆威机电", "name_en": "Zhaowei Electromechanical", "type": "A股", "role": "国内微型传动系统绝对龙头，灵巧手微型齿轮箱+行星滚柱丝杠电机模组已批量供货头部人形机器人客户", "market_share": "微型传动系统国内市占率第一（约25%，GGII）；灵巧手微型齿轮箱已进入宇树/智元/傅利叶等头部客户", "highlight": "2025年推出灵巧手专用微型行星滚柱丝杠电机模组（直径6-10mm级），已进入宇树/智元/傅利叶/星动纪元等头部客户供应链；自研灵巧手整手产品（17个主动自由度+多模态传感器）处于送样测试阶段；微型传动技术壁垒极高（模具精度0.005mm级）", "revenue": "2025年营收16.46亿元（+33.41%），其中微型传动系统占比超80%", "exchange": "深交所", "evidence": {"2025年营收16.46亿元（+33.41%）": "兆威机电2025年年度报告", "灵巧手微型行星滚柱丝杠电机模组": "兆威机电2025年产品发布会/技术公告", "进入宇树/智元/傅利叶等客户": "兆威机电投资者关系活动记录/券商调研", "微型传动市占率约25%": "GGII高工机器人产业研究所数据"}, "data_note": "灵巧手整手产品尚在送样阶段未形成收入；微型传动主业稳定增长，灵巧手为增量弹性方向", "rating": 4, "is_leader": true}, {"code": "873593", "name": "鼎智科技", "name_en": "Dingzhi Technology", "type": "A股", "role": "国内微型精密运动控制领先企业，微特电机+丝杆模组一体化方案供应商，为灵巧手提供滑动丝杆/行星滚柱丝杆+微型步进/无刷电机模组", "market_share": "国内微特电机细分领域头部；滑动丝杆+微型电机模组已获多家头部人形机器人客户定点，但尚未形成规模收入", "highlight": "北交所“人形机器人灵巧手”核心标的；微型电缸（电机+丝杆+导轨一体化）适配灵巧手指关节驱动；客户覆盖多家国内头部人形机器人本体厂商；母公司江苏雷利（300660）提供产业协同", "revenue": "2024年营收约5.2亿元", "exchange": "北交所", "evidence": {"2024年营收约5.2亿元": "鼎智科技2024年年度报告", "获多家头部人形机器人客户定点": "鼎智科技投资者关系活动记录", "微型电缸适配灵巧手": "鼎智科技产品技术公告"}, "data_note": "北交所流动性偏低；人形机器人相关收入占比仍较小，尚处批量定点→量产转化阶段", "rating": 3, "is_leader": false}, {"code": "—", "name": "因时机器人", "name_en": "Inspire Robots", "type": "未上市", "role": "国产微型直线伺服/灵巧手整手龙头，全球首款商业化的微型一体化伺服电缸方案，灵巧手产品RH56/RH56Pro已批量出货国内外头部人形/具身智能客户", "market_share": "国内视触觉传感器领域技术第一梯队；视触觉传感器分辨率可达0.01mm级别；触觉传感器单价已从万元级降至千元级", "highlight": "RH56灵巧手单手6主动自由度/握力20N；RH56Pro单手12主动自由度/指端力控精度0.01N，性能对标Shadow Hand，价格仅为其1/10-1/5；已进入宇树/智元/银河通用/傅利叶/星动纪元/开普勒等几乎所有国内头部人形机器人供应链；2025年出货量同比超500%；股东含小米/美团/深创投等", "revenue": "未公开披露；2025年灵巧手出货量同比超500%；B轮融资后估值约30-40亿元", "exchange": "未上市（Private），成立于2016年，总部北京", "evidence": {"RH56系列灵巧手产品": "因时机器人官网/产品手册", "进入宇树/智元/银河通用等头部客户": "因时机器人官方公告/客户供应商公告", "2025年出货量同比超500%": "因时机器人2025年业务总结/高工机器人报道", "股东含小米/美团/深创投": "企查查/天眼查融资信息"}, "rating": 5, "is_leader": true}, {"code": "—", "name": "帕西尼感知", "name_en": "PaXini Perception", "type": "未上市", "role": "全球视触觉传感器（GelSight-type）技术先驱，自主研发高分辨率视触觉传感器，赋予灵巧手类人触觉感知能力", "market_share": "国内视触觉传感器领域技术第一梯队；已与优必选/智元/宇树/小米等头部客户合作", "highlight": "自研视触觉传感器分辨率可达0.01mm级别（远超传统压阻式），可感知物体纹理/硬度/温度等多模态信息；触觉传感器单价从万元级降至千元级；产品线覆盖传感器模组→灵巧手整手→具身智能数据采集平台", "revenue": "未公开披露；2024年完成数亿元A+轮融资，投资方含比亚迪/联想创投/蓝驰创投", "exchange": "未上市（Private），成立于2021年，总部深圳", "evidence": {"视触觉传感器分辨率0.01mm级别": "帕西尼感知官网/技术白皮书", "与优必选/智元/宇树/小米合作": "帕西尼感知官方公告/行业报道", "A+轮融资数亿元": "帕西尼感知融资公告（2024）", "投资方含比亚迪/联想创投": "企查查/IT桔子融资数据"}, "rating": 4, "is_leader": true}], "competition_status": "混战阶段（灵巧手技术路线未收敛——腱驱动vs连杆驱动vs齿轮直驱，自由度从6到20+不等），因时机器人国产整手出货第一，空心杯电机/微型传动/触觉传感三大核心部件技术方向尚在演进"}]}]}, {"name": "应用层", "name_en": "Application Layer", "subtitle": "场景落地", "description": "应用层是物理AI产业链的最后一环，将技术转化为商业价值，直接面向终端用户，是验证物理AI技术成熟度和推动数据闭环迭代的关键环节。", "children": [{"name": "人形机器人", "name_en": "Humanoid Robot", "description": "人形机器人是物理AI最具代表性的应用场景，已从实验室走向量产爬坡阶段", "stocks": [{"code": "TSLA", "name": "特斯拉", "name_en": "Tesla", "type": "美股", "role": "全球人形机器人领军企业，Optimus Gen3于2026年夏季启动量产爬坡", "market_share": "2026年产量指引5-15万台（机构预测实际1-5万台）；弗里蒙特工厂设计年产能远期目标100万台；Optimus为行业标杆但2025年实际出货仅约150台（试产阶段）", "highlight": "马斯克目标：量产后单台成本控制在2万美元以内（当前小批量BOM成本约4.3万美元）；采用线性执行器技术路线", "revenue": "2024年总营收976.9亿美元；Optimus尚未贡献独立收入", "exchange": "纳斯达克", "evidence": {"2024年总营收976.9亿美元": "Tesla FY2024 10-K Filing (SEC)", "2026年产量指引5-15万台": "Tesla 2026年Q1财报电话会议; 机构研报", "弗里蒙特远期产能100万台": "Tesla投资者日公开演示", "BOM成本约4.3万美元": "Goldman Sachs 2026年拆解报告估计"}, "data_note": "【已修正】“百万台”系远期设计产能非2026年目标；2万美元为量产目标成本非已实现", "rating": 5, "is_leader": true}, {"code": "—", "name": "Figure AI", "name_en": "Figure AI", "type": "未上市", "role": "全球估值最高的人形机器人独角兽，自研Helix VLA模型实现视觉-语言-动作一体化，物理AI“模型+硬件”一体化标杆", "market_share": "中国商超零售场景人形机器人部署量第一；2025年出货超1,500台；Omdia口径全球出货前五；业绩高度依赖美团单一客户", "highlight": "Figure 03搭载Helix VLA模型；2026年5月公开200小时连续作业直播，累计分拣249,556个包裹零故障停机；投资方包括NVIDIA、Microsoft、OpenAI", "revenue": "未公开，仍处于亏损投入期；2025年C轮融资后估值390亿美元", "exchange": "未上市（Private）", "evidence": {"C轮估值390亿美元": "Bloomberg/TechCrunch 2025年9月报道; PitchBook数据", "Figure 03在宝马/亚马逊部署": "Figure AI官方公告/新闻稿", "200小时零故障直播": "Figure AI 2026年5月官方直播记录", "投资方含NVIDIA/Microsoft/OpenAI": "Figure AI融资公告; Crunchbase数据"}, "rating": 4, "is_leader": false}, {"code": "—", "name": "智元机器人", "name_en": "Agibot", "type": "未上市", "role": "人形机器人整机头部厂商，覆盖远征（工业/商用）、灵犀（科研教育）、精灵（工业量产）三大系列，全栈自研具身大模型GO-1、PowerFlow关节模组", "market_share": "2025年全球人形机器人出货量市占率39%，全球第一（Omdia 2026.01，出货5,168台）；赛迪(CCID)口径下出货4,000+台、市占率23.5%，排名第二", "highlight": "前华为“天才少年”彭志辉（稚晖君）2023年2月创立；成立3年完成11轮融资累计超30亿元；股东包括高瓴、红杉、腾讯、比亚迪、LG电子；2026年计划港股IPO目标估值400-500亿港元；零部件国产化率超80%，开源百万级真机数据集AgiBot World", "revenue": "2025年约15-20亿元（同比+10倍）；精灵G2机型毛利率30-35%；2026年目标突破50亿元", "exchange": "未上市（Private），计划港股IPO", "evidence": {"2025年出货5,168台市占率39%全球第一": "Omdia《通用具身机器人市场雷达》报告（2026年1月）", "赛迪口径出货4,000+台市占率23.5%": "赛迪《2025年人形机器人市场研究报告》", "2025年营收约15-20亿元": "证券时报/东方财富报道，综合融资文件披露", "2026年计划港股IPO": "证券时报2026年报道; 同花顺梳理"}, "rating": 5, "is_leader": true}, {"code": "—", "name": "宇树机器人", "name_en": "Unitree Robotics", "type": "未上市", "role": "人形+四足机器人双线厂商，全球四足机器人累计销量第一（超3.3万台），人形H1/G1主打“低成本高性能”（G1售价9.9万元起），面向科研教育（占收入73.6%）和商业消费场景", "market_share": "官方披露2025年人形机器人出货量超5,500台（不含轮式双臂）；赛迪(CCID)口径市占率32.4%全球第一；Omdia口径4,200台/32%；智元+宇树合计占全球份额71%", "highlight": "2026年6月1日科创板IPO过会（仅73天创“预先审阅机制”最快纪录），拟募资42亿元（48%投向具身智能大模型）；IPO估值约420亿元；毛利率60.1%（2025年），人形机器人毛利率62.9%；创始人王兴兴控制68.78%表决权", "revenue": "2025年约17亿元（+332.6%）；2024年3.93亿元（+146.8%）；2025年归母净利润2.78亿元，扣非净利润5.91亿元；人形机器人收入首超四足，占51.8%", "exchange": "未上市（科创板IPO已过会，代码暂无）", "evidence": {"科创板IPO过会拟募资42亿元": "宇树科技科创板招股书（2026年6月）", "2025年人形出货5,500+台市占率32.4%": "赛迪《2025年人形机器人市场研究报告》", "2025年营收约17亿元净利润2.78亿元": "宇树科技招股书/上交所披露", "毛利率60.1%人形62.9%": "宇树科技招股书财务数据"}, "rating": 5, "is_leader": true}, {"code": "09880.HK", "name": "优必选", "name_en": "UBTech Robotics", "type": "港股", "role": "全球全尺寸具身智能人形机器人龙头，Walker S系列已量产交付，收入/销量全球第一，已进入汽车制造（比亚迪/奥迪一汽）和航空制造（空中客车）等工业场景", "market_share": "全尺寸具身智能人形机器人收入/销量全球第一（2025年交付1,079台，收入8.2亿元）；人形机器人专利2,985项全球第一", "highlight": "Walker S2支持3分钟自主换电、7×24小时连续作业；工业场景占比超80%；年化产能超6000台，2026年目标万台级；持有现金49.2亿元；毛利率37.7%（全尺寸54.6%）", "revenue": "2025年营收20.01亿元（+53.3%），全尺寸人形机器人收入8.2亿元（+2203.7%），亏损7.9亿元（同比收窄32%）", "exchange": "港交所", "evidence": {"2025年营收20.01亿元（+53.3%）": "优必选2025年年度报告（港交所公告，2026-03-31）", "全尺寸人形机器人交付1,079台收入8.2亿元": "优必选2025年年度报告业务拆分", "全球全尺寸具身智能人形机器人销量/收入第一": "IDC全球人形机器人市场报告/Frost & Sullivan", "空中客车合作": "优必选2025年官方公告/新闻稿"}, "rating": 4, "is_leader": true}, {"code": "—", "name": "波士顿动力", "name_en": "Boston Dynamics", "type": "未上市", "role": "全球人形机器人技术标杆，2024年发布全电动Atlas（取代液压版），动态运动能力（跑酷/后空翻/自主导航）全球领先，正在现代汽车工厂进行实际部署测试", "market_share": "人形机器人技术制高点——Atlas的动态运动+自主操作能力在复杂地形适应性和全身协调性方面全球公认最强；Spot四足机器人已实现全球商业化", "highlight": "2024年全电动Atlas发布，标志着从液压研究平台向商业产品转型；2025年在现代汽车乔治亚工厂测试零部件搬运等实际任务；Spot已在工业巡检/建筑/公共安全等领域商用；现代汽车2021年以11亿美元收购，提供产业+资本双重支撑", "revenue": "未公开（现代汽车子公司，非独立披露）；2024年公司估值约11亿美元（收购价）", "exchange": "未上市（现代汽车集团子公司，2021年以约11亿美元收购）", "evidence": {"全电动Atlas 2024年发布": "Boston Dynamics 2024年4月官方发布", "现代汽车乔治亚工厂部署": "The Robot Report 2025年报道/波士顿动力官方", "现代汽车11亿美元收购": "Hyundai 2021年6月收购公告"}, "data_note": "技术全球第一梯队，但商业化进度慢于宇树/智元/优必选，Atlas尚无公开售价和对外销售计划", "rating": 4, "is_leader": false}, {"code": "—", "name": "银河通用", "name_en": "Galaxy General Robot (Galbot)", "type": "未上市", "role": "国内人形机器人头部厂商，聚焦零售/商超/服务场景的商业化落地，全球首家实现人形机器人大规模商超部署的企业，与美团深度绑定构建零售+物流场景壁垒", "market_share": "中国商超零售场景人形机器人部署量第一；2025年出货超1,500台（含零售+物流场景）；Omdia口径下全球人形机器人出货量前五", "highlight": "Galbot G1通用人形机器人专为零售/服务场景设计（卸货/补货/拣选/清洁）；2025年与美团签署5年10万台战略合作，是全球人形机器人最大单笔商业订单；全国超200个商超/便利店部署点；2026年启动第二代通用机器人G2量产；投资方含美团/腾讯/IDG资本/蓝驰创投/高瓴创投", "revenue": "2025年营收约8-10亿元（同比+500%+），G1毛利率约25-30%；2026年目标营收25亿元+", "exchange": "未上市（Private），成立于2023年初，总部深圳。曾传2026年港股IPO", "evidence": {"2025年出货超1,500台零售场景部署第一": "Omdia/赛迪2025年人形机器人市场报告", "与美团签署5年10万台订单": "银河通用/美团2025年战略合作公告", "2025年营收约8-10亿元": "券商调研/行业媒体报道综合", "投资方含美团/腾讯/IDG/高瓴": "企查查/IT桔子融资数据", "Omdia全球出货量前五": "Omdia《通用具身机器人市场雷达》报告（2026.01）"}, "data_note": "业绩高度依赖美团单一客户（订单占比估计60-70%+）；G1毛利率25-30%低于行业水平（宇树人形毛利率62.9%）；10万台订单为5年框架协议，实际年交付量取决于G2量产进度", "rating": 4, "is_leader": false}, {"code": "—", "name": "傅利叶", "name_en": "Fourier Intelligence", "type": "未上市", "role": "从康复机器人延伸至通用人形机器人的差异化厂商，GR系列人形机器人已小批量出货，康复机器人行业经验提供独特应用场景洞察", "market_share": "2025年人形机器人出货约300台（全球份额约1.8%），位列全球前十；康复机器人领域市占率中国第一", "is_leader": false, "highlight": "GR-2通用人形机器人（2025年发布）瞄准医疗康复+工业场景双线布局；康复机器人全球装机超3000台积累的力控+安全性技术复用到人形机器人", "revenue": "2025年营收约5-8亿元（含康复机器人主业）", "exchange": "未上市（Private），成立于2015年，总部上海", "evidence": {"2025年人形出货约300台": "赛迪《2025年人形机器人市场研究报告》", "GR-2发布": "傅利叶2025年产品发布会"}, "data_note": "人形机器人业务占比仍小于康复主业（外骨骼/康复机器人），但技术同源性较强", "rating": 3}, {"code": "—", "name": "星动纪元", "name_en": "Robot Era", "type": "未上市", "role": "清华大学交叉信息研究院孵化的人形机器人企业，主打高动态运动+全尺寸通用人形机器人，海外业务占比约50%出海能力突出", "market_share": "2025年人形机器人出货约400台（全球份额约2.4%），位列全球第八左右；海外业务占比约50%", "is_leader": false, "highlight": "星动STAR 1主打高动态运动（跑跳/上下楼梯/双臂操作）；海外收入占比约50%（日本/欧洲/中东）；清华交叉信息研究院（姚期智院士团队）技术转化，运动控制算法学术积淀深厚", "revenue": "2025年营收约2-3亿元（预估）", "exchange": "未上市（Private），成立于2023年，总部北京", "evidence": {"2025年出货约400台份额2.4%": "赛迪《2025年人形机器人市场研究报告》", "清华交叉信息研究院孵化": "星动纪元官网/公开信息", "海外占比约50%": "星动纪元投资者交流/媒体采访"}, "rating": 3}], "competition_status": "中国厂商量产领先全球（出货占全球84.7%），宇树/智元双寡头合计占55.9%，但格局远未确定——特斯拉Optimus 2026年量产将重塑行业，技术路线（全尺寸vs轻量级、液压vs全电动）仍在博弈"}, {"name": "智能驾驶", "name_en": "Autonomous Driving", "description": "物理AI技术应用于高阶自动驾驶系统，构建从仿真训练到实际应用的完整数据闭环", "stocks": [{"code": "002594", "name": "比亚迪", "name_en": "BYD", "type": "A股", "role": "整车+自研智驾双轮驱动，2026年3月GTC大会上英伟达正式宣布比亚迪加入NVIDIA DRIVE Hyperion生态", "market_share": "国内新能源车市占率领先（约33%），整车+自研智驾双轮驱动；“天神之眼”智驾系统采用英伟达DRIVE AGX Thor+Hyperion平台", "highlight": "“天神之眼”智驾系统持续迭代，采用DRIVE AGX Thor芯片+DRIVE Hyperion平台+Omniverse数字孪生，构建仿真训练到实际应用的数据闭环", "revenue": "2024年营收7,771亿元（+29%）", "exchange": "深交所", "evidence": {"加入NVIDIA DRIVE Hyperion生态": "NVIDIA GTC 2026大会公告/比亚迪官方公告", "2024年营收7,771亿元": "比亚迪2024年年度报告"}, "rating": 2, "is_leader": false}, {"code": "GOOGL", "name": "Waymo", "name_en": "Waymo (Alphabet子公司)", "type": "未上市", "role": "全球自动驾驶技术标杆企业，专注Robotaxi出行服务，运营覆盖美国10个城市，2026年计划扩展至20+城市（含伦敦、东京），同时布局无人配送（DoorDash合作）和自动驾驶卡车", "market_share": "美国Robotaxi市场绝对第一（领先Tesla/Zoox/Cruise）；2026年MAU已达Lyft的6%、Uber的3.3%；累计自动驾驶里程超2亿英里；2025年每周订单量45万次", "highlight": "2026年2月完成160亿美元融资，估值1,260亿美元（全球自动驾驶史上最大单笔融资）；累计自动驾驶里程超2亿英里；2025年每周订单量45万次，2026年底目标100万次/周；严重伤害事故减少90%（vs.人类驾驶员）", "revenue": "2025年乘车收入约2.7亿美元（约1,500万次付费出行，均价~$18/次）；2026年预测7-8亿美元；亏损严重，2025年亏损约45-56亿美元", "exchange": "未独立上市（Alphabet子公司，代码GOOGL）", "evidence": {"估值1,260亿美元融资160亿美元": "J.P. Morgan首次覆盖Waymo研报（2026年2月）; NBD每日经济新闻报道", "2025年乘车收入约2.7亿美元": "J.P. Morgan研报; NextBigFuture分析", "每周订单45万次": "Waymo官方公告/科技媒体报道", "累计自动驾驶里程超2亿英里": "Waymo官方安全报告"}, "rating": 5, "is_leader": true}, {"code": "BIDU", "name": "萝卜快跑", "name_en": "Luobo Kuaipao (百度旗下)", "type": "未上市", "role": "百度旗下自动驾驶出行服务平台，中国Robotaxi市场份额第一，覆盖27个国内城市+出海阿联酋/英国；第六代车型RT6单车成本压缩至10万元量级（全球L4级最低）", "market_share": "中国Robotaxi市场绝对领先；累计服务订单超2,000万单全球第一（截至2026年2月）；全无人驾驶累计里程超2.2亿公里；周订单峰值超35万单（2026Q1）", "highlight": "全球首个实现单车UE盈亏平衡的Robotaxi服务——2025年8月武汉确认单车收支平衡；累计研发投入超1,500亿元（10年）；迪拜获“001号”测试牌照；2025年Q4百度AI应用收入27亿元（含萝卜快跑等）；2026年Q1百度AI业务收入136亿元首次过半", "revenue": "百度未单独披露萝卜快跑营收（归入AI应用板块）；2025年Q4百度AI应用收入27亿元；单均收入：武汉9.9公里约8.4元", "exchange": "未独立上市（百度旗下，代码BIDU）", "evidence": {"累计服务订单超2,000万单全球第一": "百度2025年Q4及全年财报", "武汉单车UE盈亏平衡": "百度2025年Q2财报电话会; 李彦宏确认", "RT6单车成本10万元量级": "百度Apollo Day技术发布", "2026年Q1百度AI业务收入136亿元": "百度2026年Q1财报"}, "rating": 5, "is_leader": true}, {"code": "PONY", "name": "小马智行", "name_en": "Pony.ai", "type": "美股", "role": "唯一实现北上广深四大一线城市全无人商业化运营的Robotaxi公司，采用轻资产「共建车队」模式（与丰田/广汽/北汽合作），国内+海外双引擎扩张", "market_share": "中国Robotaxi市场第一梯队（与萝卜快跑、文远知行并列）；唯一覆盖中国四大一线城市全无人运营", "highlight": "2025年Q4首次单季盈利；广深双城单车UE转正（深圳日均单车净收入338元，日均23单）；车队规模超1400辆（2026年目标3000+）；海外布局6国（韩国/新加坡/克罗地亚已收费运营）；APP注册用户超100万", "revenue": "2025年营收6.29亿元（+20%），Robotaxi收入1.16亿元（+129%）；持有现金105.93亿元", "exchange": "纳斯达克（港股02026.HK）", "evidence": {"2025年Q4首次单季盈利": "小马智行2025年年度报告（SEC Filing）", "深圳日均单车净收入338元": "光大证券/群益证券研报"}, "rating": 4, "is_leader": false}, {"code": "—", "name": "华为乾昆智驾", "name_en": "Huawei Qiankun ADS", "type": "未上市", "role": "中国智能驾驶供应商绝对龙头，ADS 4业界首个面向高速L3商用的智驾方案，城区领航辅助市占率国内第一", "market_share": "城区领航辅助市占率27.8%国内第一（超第2+第3名之和）；35万以上豪华车型城区领航市占率52.7%；中国智驾供应商绝对龙头", "highlight": "2025年智能汽车业务收入450.18亿元（+72.1%，华为增速最快业务）；累计搭载140万+辆；鸿蒙智行全年交付58.91万辆（同比+32%）；预计2026年高速L3规模商用，城区NCA下沉至15万级车型", "revenue": "2025年华为智能汽车业务收入450.18亿元（+72.1%）", "exchange": "未上市（华为技术有限公司），引望智能已独立运营", "evidence": {"2025年智能汽车业务收入450亿元": "华为2025年年度报告", "城区领航辅助市占率27.8%第一": "汽车公社/第三方机构2025年前三季度统计", "累计搭载140万+辆": "华为乾昆智驾ADS 2025年度数据发布", "2026年高速L3规模商用": "华为乾昆生态大会2026公告"}, "data_note": "华为智能汽车业务2025年1月注入引望智能独立运营，收入口径含零部件+HI模式+智选车", "rating": 5, "is_leader": true}, {"code": "09660.HK", "name": "地平线机器人", "name_en": "Horizon Robotics", "type": "港股", "role": "中国自动驾驶芯片龙头，征程系列累计出货超400万套，智驾芯片\"一超两强\"格局核心玩家（英伟达+华为+地平线合计占中高阶智驾近90%）", "market_share": "自主品牌基础ADAS市占率47.7%国内第一；20万以内车型中高阶智驾市占率44.2%第一；中高阶智驾整体14.4%第三（与华为15.2%几乎并列）", "highlight": "2025年中高阶芯片出货180万套（+380%），征程6系列贡献产品收入超80%；HSD全场景城区智驾方案将城区NOA带入15万元级（首搭星途ET5，8周交付2.5万套）；下一代Agentic CAR SoC 2026年推出", "revenue": "2025年营收37.6亿元（+57.7%），毛利率64.5%；现金储备超200亿元", "exchange": "港交所", "evidence": {"2025年营收37.6亿元（+57.7%）": "地平线机器人2025年年度报告（港交所公告）", "征程系列出货401万套中高阶180万套": "地平线2025年年度报告业务数据", "基础ADAS市占率47.7%第一": "高工智能汽车/盖世汽车研究院2025年数据", "中高阶智驾14.4%与华为并列": "高工智能汽车/方正证券研报"}, "rating": 5, "is_leader": true}, {"code": "WRD", "name": "文远知行", "name_en": "WeRide", "type": "美股", "role": "全球唯一同时走L4 Robotaxi+ADAS双路线的自动驾驶公司，Robotaxi出海标杆，覆盖全球12国40+城市", "market_share": "中国Robotaxi第一梯队；唯一获中美欧+新加坡全部五地无人驾驶运营资质；2025年Robotaxi收入1.48亿元（+209.6%）", "highlight": "2025年营收6.85亿元（+90%），Robotaxi收入1.48亿元（+209.6%）；获Uber 1亿美元战略投资+5年15城扩展计划；中国区单车TCO同比降38%，远程人车比从1:10提升至1:40", "revenue": "2025年营收6.85亿元（+90%），Robotaxi收入1.48亿元（+209.6%）", "exchange": "纳斯达克", "evidence": {"2025年营收6.85亿元（+90%）": "文远知行2025年年度报告（SEC Filing）", "Robotaxi收入1.48亿元（+209.6%）": "文远知行2025年Q4及全年财报", "Uber 1亿美元投资+5年15城": "文远知行2025年官方公告/Uber合作公告", "全球12国40+城市覆盖": "文远知行2025年年度报告"}, "rating": 4, "is_leader": false}, {"code": "MBLY", "name": "Mobileye", "name_en": "Mobileye", "type": "美股", "role": "全球ADAS视觉芯片绝对龙头，前视一体机市占率超50%（中国2026年初51.2%），EyeQ系列芯片累计出货超1.5亿颗，但在高阶NOA市场几乎缺席", "market_share": "中国前视一体机ADAS芯片市占率51.2%（2026年1-2月，第一）；全球ADAS视觉处理芯片市占率约60%+；高阶NOA市场（城区领航）几乎为0", "is_leader": true, "highlight": "EyeQ6系列（5-34 TOPS/7nm）已量产；EyeQ Ultra（176 TOPS/5nm）2025年量产；封闭\"黑盒\"交付模式在车企趋向全栈自研趋势下面临挑战；在中国高阶智驾市场几乎缺席", "revenue": "FY2025营收约18亿美元", "exchange": "纳斯达克", "evidence": {"前视一体机市占率51.2%": "高工智能汽车2026年1-2月中国智驾芯片市场数据", "EyeQ系列累计出货超1.5亿颗": "Mobileye官方数据", "高阶NOA市占率几乎为0": "行业共识/盖世汽车研究院数据"}, "data_note": "高阶智驾市场被英伟达/华为/地平线垄断，Mobileye封闭生态模式在中国市场竞争力持续下降", "rating": 3}, {"code": "02533.HK", "name": "黑芝麻智能", "name_en": "Black Sesame Technologies", "type": "港股", "role": "国产智驾芯片第二梯队核心标的，华山A2000（250+TOPS/7nm）是国内少数能与英伟达Orin-X正面对标的产品，2026年1月通过美国出口管制审查获准全球销售", "market_share": "中国智驾芯片市场份额尚未进入Top5（主要市场份额榜单中为\"其他\"类别）；华山A1000已搭载吉利/东风等车型的L2+功能；华山A2000 2026年量产上车", "is_leader": false, "highlight": "华山A2000（250+TOPS/7nm/支持FP8/FP16全精度）突破美国出口管制获准全球销售；武当C1200为行业首个7nm跨域计算SoC（座舱+智驾+网关）；合规出海能力为国产芯片中稀缺优势", "revenue": "2025年营收约4-5亿元（预估），仍处亏损投入期", "exchange": "港交所", "evidence": {"华山A2000通过美国出口审查": "黑芝麻智能2026年1月官方公告", "A1000搭载吉利/东风": "黑芝麻智能招股书/客户公告"}, "data_note": "目前市占率低（<2%），但A2000通过出口管制审查+地球系列域控芯片落地，2026-2027年有望突破；估值包含较多远期预期", "rating": 3}], "competition_status": "芯片端寡头格局（英伟达+华为+地平线占高阶智驾约90%），Robotaxi端一超多强（萝卜快跑订单量全球第一，Waymo技术最强但限于美国），纯视觉vs激光雷达+多传感器融合路线之争持续"}, {"name": "工业机器人与物流", "name_en": "Industrial Robot & Logistics", "description": "物理AI在工业物流、智能仓储等场景的商业化应用", "stocks": [{"code": "603611", "name": "诺力股份", "name_en": "Noblelift", "type": "A股", "role": "AI无人叉车属物理AI范畴，AGV机器人融合AI技术，已发布Omega AI智能叉车（搭载自研NobleOne AI平台）", "market_share": "AI无人叉车细分领域探索者；联合浙江大学共建具身智能物流机器人联合实验室；与英伟达暂无合作（公司2025年5月官方明确回复）", "highlight": "产品已实现商业化落地，物理AI在工业物流场景的核心服务商", "revenue": "2024年营收约82亿元", "exchange": "上交所", "evidence": {"Omega AI智能叉车+NobleOne AI平台": "诺力股份官方产品发布会", "2024年营收约82亿元": "诺力股份2024年年度报告"}, "data_note": "【重大修正】公司2025年5月7日官方明确回复“与英伟达暂无合作”，已删除相关表述", "rating": 2, "is_leader": false}, {"code": "—", "name": "Agility Robotics", "name_en": "Agility Robotics", "type": "未上市", "role": "全球首个在物流仓库实现商业部署的人形机器人公司，Digit已进入亚马逊、GXO等客户仓库实际运行", "market_share": "全球首个在物流仓库实现商业部署的人形机器人公司；Digit已在亚马逊、GXO等客户仓库实际运行；仓储物流人形机器人商业化部署领先", "highlight": "Digit第四代专为物流仓储设计，已迭代至第四代集合客户经验；亚马逊为Digit客户兼投资方", "revenue": "未公开，处于商业化早期；累计融资约1.8亿美元+", "exchange": "未上市（Private）", "evidence": {"Digit在亚马逊仓库运行": "Agility Robotics官方公告/Amazon Robotics合作公告", "累计融资约1.8亿美元": "Crunchbase/PitchBook融资数据", "RoboFab工厂规模化生产": "Agility Robotics 2024年官方公告"}, "rating": 4, "is_leader": true}], "competition_status": "混战阶段（传统AGV/AMR厂商与人形机器人新势力在仓储物流场景交汇），物理AI赋能的智能物流仍处早期商业化，尚无明确龙头"}, {"name": "工业仿真与数字孪生", "name_en": "Industrial Simulation & Digital Twin", "description": "通过数字孪生技术为工业场景提供虚拟训练环境，推动物理AI在智能制造领域的应用", "stocks": [{"code": "837092", "name": "汉鑫科技", "name_en": "Hanxin Technology", "type": "A股", "role": "聚焦AI+工业视觉、数字孪生、车路协同场景，三大业务：智能制造、智能驾驶、智慧城市", "market_share": "华为\"工业+AI\"核心合作伙伴（非独家），服务千余家客户；具体市占率未公开，属区域性/行业性服务商", "highlight": "承建烟台首条“车路云一体化”智能网联示范路；2021年北交所开市全国首批、山东省首家直接首发上市", "revenue": "2024年营收约4.3亿元", "exchange": "北交所", "evidence": {"华为工业+AI核心合作伙伴": "汉鑫科技官方公告/华为合作伙伴名录", "2024年营收约4.3亿元": "汉鑫科技2024年年度报告"}, "rating": 2, "is_leader": false}, {"code": "002990", "name": "盛视科技", "name_en": "Maxvision Technology", "type": "A股", "role": "长期致力于AI+机器人技术研究，已将智能机器人作为核心战略方向，2025年收购法国NAO人形机器人资产加速布局", "market_share": "智能安检机器人已实现商业化落地（口岸/机场等场景）；人脸识别算法NIST-FRTE全球TOP 10；收购法国NAO人形机器人资产加速布局", "highlight": "搭载DeepSeek大模型的服务机器人在西安咸阳机场口岸运行；人脸识别算法NIST-FRTE全球TOP 10", "revenue": "2025年总营收14.45亿元（+18.26%）", "exchange": "深交所", "evidence": {"2025年营收14.45亿元（+18.26%）": "盛视科技2025年年度报告", "收购法国NAO人形机器人资产": "盛视科技2025年收购公告", "NIST-FRTE全球TOP 10": "NIST人脸识别算法评测排名"}, "rating": 3, "is_leader": false}], "competition_status": "混战阶段（中国工业仿真国产化率低、市场碎片化），数字孪生从概念验证迈向规模部署，物理AI与工业仿真融合为前沿方向但技术路径尚在探索"}, {"name": "无人机与低空经济", "name_en": "Drones & Low-Altitude Economy", "description": "无人机是飞行机器人，集成了SLAM自主导航、3D避障、目标识别与跟踪等物理AI核心技术，是全球部署量最大的物理AI终端", "stocks": [{"code": "—", "name": "大疆创新", "name_en": "DJI", "type": "未上市", "role": "全球无人机绝对霸主，消费级/农业/行业无人机市占率均超70%，核心技术（飞控/视觉避障/SLAM/图传）构成全球最庞大的物理AI终端生态", "market_share": "全球消费级无人机市占率70%+（连续10年第一）；全球运动相机市占率~66%；美国农业无人机市占率~62%；全球数千万台无人机实时运行SLAM+避障等物理AI算法", "highlight": "2025年营收约850-900亿元，净利润~200亿，净利率~25%；Pocket 3累计销量破1000万台；自研Livox激光雷达已用于自动驾驶/机器人感知；海外收入占比~80%；全球数千万台无人机实时运行SLAM+避障等物理AI算法", "revenue": "2025年营收约850-900亿元（非官方披露），净利润超200亿元，净利率~25%", "exchange": "未上市（Private），胡润2025全球独角兽榜估值840亿元", "evidence": {"2025年营收约850-900亿元": "36氪/雷锋网/界面新闻等多家媒体综合估算", "全球消费级无人机市占率70%+": "DroneAnalyst/IDC行业报告", "Pocket 3累计销量破1000万台": "大疆官方/渠道数据综合", "胡润估值840亿元": "胡润《2025全球独角兽榜》"}, "data_note": "非上市公司，财务数据为第三方估算；面临美国制裁风险", "rating": 5, "is_leader": true}], "competition_status": "大疆绝对垄断（全球消费级无人机70%+、农业无人机62%），但面临美国制裁风险；低空经济政策催生eVTOL/物流无人机等新赛道，细分领域竞争格局尚未定型"}, {"name": "家用服务机器人", "name_en": "Consumer Service Robots", "description": "消费级清洁/服务机器人是全球部署量最大的物理AI终端之一，搭载SLAM导航、3D物体识别、自主避障等核心技术，正从\"工具\"向\"管家\"演进", "stocks": [{"code": "688169", "name": "石头科技", "name_en": "Roborock", "type": "A股", "role": "全球智能扫地机器人销量第一（IDC），具身智能布局最激进的消费机器人厂商——5轴仿生机械手+轮足机器人已量产", "market_share": "全球智能扫地机器人市场份额27.0%，销量和销额均全球第一（IDC 2025）；国内线上市占率约33.8%", "highlight": "G30 Space搭载全球首创5轴折叠仿生机械手，从二维清洁升级三维空间操作；G-Rover是全球首款量产轮足扫地机器人（可上下楼梯）；星阵领航3.0系统+RRmind GPT融合DeepSeek大模型；海外收入占比56%", "revenue": "2025年营收约186亿元（+56%），研发投入14.2亿元（+46%），净利润13.6亿元", "exchange": "上交所科创板", "evidence": {"2025年营收约186亿元": "石头科技2025年年度报告", "全球市场份额27.0%第一": "IDC 2025年全球智能清洁机器人市场报告", "G30 Space 5轴仿生机械手": "石头科技2025年产品发布会", "G-Rover轮足机器人": "石头科技2025年产品公告"}, "data_note": "2025年增收不增利（净利润-31%），销售费用翻倍至31.8亿；洗衣机/洗地机/割草机器人新业务短期拖累利润", "rating": 4, "is_leader": true}, {"code": "603486", "name": "科沃斯", "name_en": "Ecovacs", "type": "A股", "role": "中国扫地机器人连续11年销量第一，沿\"工具→管家→伴侣\"路径向具身智能演进，2026年发布管家机器人\"八界\"", "market_share": "中国扫地机器人线上销量第一（30.4%，连续11年，奥维云网）；全球智能清洁机器人第二（14.3%，IDC 2025）", "highlight": "管家机器人\"八界\"搭载OpenClaw智能体框架，可主动归位、递送物品；AI仿生陪伴机器人\"毛团儿\"；OZMO ROLLER恒压活水洗地技术全球累计销量160万台；海外收入88.5亿（+24.4%）", "revenue": "2025年营收190.40亿元（+15.10%），净利润17.58亿元（+118.13%），毛利率48.82%", "exchange": "上交所", "evidence": {"2025年营收190.40亿元": "科沃斯2025年年度报告", "连续11年国内销量第一": "奥维云网/IDC中国扫地机器人市场数据", "管家机器人八界发布": "科沃斯2026年Q1产品发布会", "全球市场份额14.3%": "IDC 2025年全球智能清洁机器人市场报告"}, "rating": 3, "is_leader": false}], "competition_status": "双寡头格局（石头+科沃斯占中国线上市场约64%），从清洁工具向具身智能管家演进（5轴机械手/轮足机器人/管家机器人），消费级具身智能探索仍处早期，技术路线有待验证"}]}]};
+
+/* ── 颜色配置 ── */
+const COLORS = {
+    root:       '#a78bfa',
+    layer:      ['#4fc3f7', '#ffb74d', '#81c784', '#e57373'],
+    domain:     '#90a4ae',
+    subdomain:  '#78909c',
+    stock:      '#ffcc80'
+};
+
+/* ── 递归构建 ECharts tree 数据 ── */
+function buildTree(data) {
+    const root = {
+        name: data.name,
+        value: formatRootValue(data),
+        itemStyle: {
+            color: COLORS.root,
+            borderColor: '#c4b5fd',
+            borderWidth: 3,
+            shadowBlur: 18,
+            shadowColor: 'rgba(167,139,250,0.5)'
+        },
+        lineStyle: { color: 'rgba(167,139,250,0.35)', width: 2 },
+        label: { fontSize: 16, fontWeight: 700, color: '#e8e0ff' },
+        _meta: {
+            type: 'root',
+            desc: data.description || '',
+            market_cagr: data.market_cagr || '',
+            market_size_2032: data.market_size_2032 || '',
+            market_size_2040: data.market_size_2040 || ''
+        },
+        children: []
+    };
+
+    (data.children || []).forEach((layer, li) => {
+        const layerColor = COLORS.layer[li] || COLORS.layer[0];
+        const layerNode = {
+            name: layer.name,
+            value: layer.subtitle || '',
+            itemStyle: {
+                color: layerColor,
+                borderColor: layerColor,
+                borderWidth: 2,
+                shadowBlur: 12,
+                shadowColor: layerColor + '66'
+            },
+            lineStyle: { color: layerColor + '40', width: 1.5 },
+            label: { fontSize: 14, fontWeight: 600, color: layerColor },
+            _meta: {
+                type: 'layer',
+                desc: layer.description || '',
+                subtitle: layer.subtitle || ''
+            },
+            children: []
+        };
+
+        (layer.children || []).forEach((domain, di) => {
+            if (domain.sub_domains) {
+                /* 硬件层：domain → sub_domains → stocks */
+                const domainNode = {
+                    name: domain.name,
+                    value: '',
+                    itemStyle: { color: COLORS.domain, borderColor: COLORS.domain, borderWidth: 1.5 },
+                    lineStyle: { color: COLORS.domain + '30', width: 1 },
+                    label: { fontSize: 12, color: '#b0bec5' },
+                    _meta: { type: 'domain', desc: domain.description || '' },
+                    children: []
+                };
+
+                (domain.sub_domains || []).forEach((sub, si) => {
+                    const subNode = {
+                        name: sub.name,
+                        value: '',
+                        itemStyle: { color: COLORS.subdomain, borderColor: COLORS.subdomain, borderWidth: 1 },
+                        lineStyle: { color: COLORS.subdomain + '25', width: 1 },
+                        label: { fontSize: 11, color: '#90a4ae' },
+                        _meta: { type: 'subdomain', desc: '' },
+                        children: (sub.stocks || []).map(stock => makeStockNode(stock))
+                    };
+                    domainNode.children.push(subNode);
+                });
+
+                layerNode.children.push(domainNode);
+            } else if (domain.stocks) {
+                /* 其他层：domain → stocks */
+                const domainNode = {
+                    name: domain.name,
+                    value: '',
+                    itemStyle: { color: COLORS.domain, borderColor: COLORS.domain, borderWidth: 1.5 },
+                    lineStyle: { color: COLORS.domain + '30', width: 1 },
+                    label: { fontSize: 12, color: '#b0bec5' },
+                    _meta: { type: 'domain', desc: domain.description || '' },
+                    children: (domain.stocks || []).map(stock => makeStockNode(stock))
+                };
+                layerNode.children.push(domainNode);
+            }
+        });
+
+        root.children.push(layerNode);
+    });
+
+    return root;
+}
+
+function ratingStars(r) { return '★'.repeat(r); }
+
+function makeStockNode(stock) {
+    const r = stock.rating || 0;
+    const starStr = r ? '  ' + ratingStars(r) : '';
+    const rColor = r >= 5 ? '#ffb74d' : r >= 4 ? '#ffcc80' : r >= 3 ? '#ffe0b2' : '#bcaaa4';
+    return {
+        name: stock.name,
+        value: stock.code || '',
+        itemStyle: {
+            color: rColor,
+            borderColor: r >= 4 ? '#ffe0b2' : '#bcaaa4',
+            borderWidth: r >= 4 ? 1.5 : 1,
+            shadowBlur: r >= 4 ? 8 : 3,
+            shadowColor: 'rgba(255,204,128,' + (r >= 5 ? '0.5' : r >= 4 ? '0.3' : '0.15') + ')'
+        },
+        lineStyle: { color: COLORS.stock + '25', width: 1 },
+        label: { fontSize: 10, color: '#d7ccc8', formatter: stock.name + starStr },
+        _meta: {
+            type: 'stock',
+            code: stock.code || '',
+            type_: stock.type || '',
+            exchange: stock.exchange || '',
+            role: stock.role || '',
+            market_share: stock.market_share || '',
+            highlight: stock.highlight || '',
+            revenue: stock.revenue || '',
+            rating: r
+        }
+    };
+}
+
+function formatRootValue(data) {
+    const parts = [];
+    if (data.market_cagr) parts.push('CAGR ' + data.market_cagr);
+    if (data.market_size_2032) parts.push('2032: ' + data.market_size_2032);
+    return parts.join(' | ');
+}
+
+/* ── 构建树 ── */
+const treeData = buildTree(DATA);
+
+/* ── 动态计算图表高度，防止节点重叠 ── */
+function countLeaves(node) {
+    if (!node.children || node.children.length === 0) return 1;
+    var sum = 0;
+    for (var i = 0; i < node.children.length; i++) {
+        sum += countLeaves(node.children[i]);
+    }
+    return sum;
+}
+function calcChartHeight() {
+    var MIN_NODE_HEIGHT = 36;  // 每个叶子节点的最小垂直空间（px）
+    var CHART_PADDING = 200;   // 图表额外内边距（标题+图例+边距）
+    var leafCount = countLeaves(treeData);
+    return Math.max(window.innerHeight, leafCount * MIN_NODE_HEIGHT + CHART_PADDING);
+}
+var mainEl = document.getElementById('main');
+mainEl.style.height = calcChartHeight() + 'px';
+
+/* ── 初始化图表 ── */
+const chart = echarts.init(mainEl);
+
+const option = {
+    tooltip: {
+        trigger: 'item',
+        triggerOn: 'mousemove',
+        formatter: function(params) {
+            const d = params.data;
+            const meta = d._meta || {};
+            const type = meta.type;
+
+            if (type === 'root') {
+                return '<div style="font-size:15px;font-weight:700;color:#a78bfa;margin-bottom:6px;">' + d.name + '</div>'
+                     + '<div style="color:#8899aa;font-size:12px;margin-bottom:4px;">Physical AI</div>'
+                     + (meta.desc ? '<div style="color:#b0bec5;font-size:12px;line-height:1.5;max-width:280px;">' + meta.desc + '</div>' : '')
+                     + '<div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">'
+                     + (meta.market_cagr ? '<span style="background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);border-radius:4px;padding:3px 8px;font-size:11px;color:#c4b5fd;">📈 ' + meta.market_cagr + '</span>' : '')
+                     + (meta.market_size_2032 ? '<span style="background:rgba(79,195,247,0.15);border:1px solid rgba(79,195,247,0.3);border-radius:4px;padding:3px 8px;font-size:11px;color:#4fc3f7;">🎯 ' + meta.market_size_2032 + '</span>' : '')
+                     + (meta.market_size_2040 ? '<span style="background:rgba(255,183,77,0.15);border:1px solid rgba(255,183,77,0.3);border-radius:4px;padding:3px 8px;font-size:11px;color:#ffb74d;">🚀 ' + meta.market_size_2040 + '</span>' : '')
+                     + '</div>';
+            }
+
+            if (type === 'layer') {
+                return '<div style="font-size:14px;font-weight:600;color:' + (d.itemStyle.color || '#fff') + ';margin-bottom:4px;">' + d.name + '</div>'
+                     + (meta.subtitle ? '<div style="color:#778899;font-size:11px;margin-bottom:4px;">' + meta.subtitle + '</div>' : '')
+                     + (meta.desc ? '<div style="color:#b0bec5;font-size:12px;line-height:1.5;max-width:260px;">' + meta.desc.substring(0, 150) + (meta.desc.length > 150 ? '...' : '') + '</div>' : '');
+            }
+
+            if (type === 'domain' || type === 'subdomain') {
+                let html = '<div style="font-size:13px;font-weight:600;color:#b0bec5;margin-bottom:4px;">' + d.name + '</div>';
+                if (meta.desc) html += '<div style="color:#90a4ae;font-size:12px;line-height:1.4;max-width:240px;">' + meta.desc + '</div>';
+                return html;
+            }
+
+            if (type === 'stock') {
+                const stars = meta.rating ? ratingStars(meta.rating) : '';
+                let html = '<div style="font-size:13px;font-weight:600;color:#ffcc80;margin-bottom:4px;">' + d.name + ' ' + stars + '</div>';
+                if (meta.code) html += '<div style="color:#8899aa;font-family:monospace;font-size:12px;margin-bottom:4px;">' + meta.code + (meta.exchange ? ' · ' + meta.exchange : '') + (meta.type_ ? ' · ' + meta.type_ : '') + '</div>';
+                if (meta.role) html += '<div style="color:#b0bec5;font-size:12px;margin-bottom:3px;">' + meta.role + '</div>';
+                if (meta.revenue) html += '<div style="color:#81c784;font-size:12px;margin-bottom:3px;">💰 ' + meta.revenue + '</div>';
+                if (meta.market_share) html += '<div style="color:#4fc3f7;font-size:12px;">📊 ' + meta.market_share + '</div>';
+                if (meta.highlight) html += '<div style="color:#ffb74d;font-size:12px;">🔸 ' + meta.highlight + '</div>';
+                return html;
+            }
+
+            return d.name;
+        },
+        backgroundColor: 'rgba(8, 10, 28, 0.95)',
+        borderColor: 'rgba(100, 180, 255, 0.3)',
+        borderWidth: 1,
+        padding: [12, 16],
+        textStyle: { color: '#e0e0e0', fontSize: 13 },
+        extraCssText: 'border-radius:8px;backdrop-filter:blur(6px);box-shadow:0 4px 20px rgba(0,0,0,0.5);'
+    },
+
+    series: [{
+        type: 'tree',
+        data: [treeData],
+
+        /* 布局配置 */
+        layout: 'orthogonal',
+        orient: 'LR',
+        edgeShape: 'polyline',
+        edgeForkPosition: '63%',
+
+        /* 根节点位置 — 使用固定像素避免高容器时浪费空间 */
+        top: 55,
+        bottom: 55,
+        left: '8%',
+        right: '15%',
+
+        /* 交互 */
+        roam: true,
+        zoom: 0.9,
+
+        /* 初始展开层级（2层：根+4个层） */
+        initialTreeDepth: 2,
+
+        /* 标签 */
+        label: {
+            show: true,
+            position: 'right',
+            verticalAlign: 'middle',
+            align: 'left',
+            fontSize: 12,
+            color: '#c0ccd8',
+            distance: 8,
+            formatter: function(params) {
+                const meta = params.data._meta || {};
+                if (meta.type === 'stock' && meta.code) {
+                    const stars = meta.rating ? ratingStars(meta.rating) : '';
+                    return params.name + '  {' + params.dataIndex + 'code|' + meta.code + '}' + '  {' + params.dataIndex + 'stars|' + stars + '}';
+                }
+                return params.name;
+            },
+            rich: {
+                code: {
+                    fontSize: 9,
+                    color: '#667788',
+                    fontFamily: 'monospace',
+                    padding: [0, 0, 0, 4]
+                },
+                stars: {
+                    fontSize: 8,
+                    color: '#ffb74d',
+                    padding: [0, 0, 0, 2]
+                }
+            }
+        },
+
+        /* 叶子节点标签 */
+        leaves: {
+            label: {
+                position: 'right',
+                verticalAlign: 'middle',
+                align: 'left'
+            }
+        },
+
+        /* 连线样式 */
+        lineStyle: {
+            color: 'rgba(100, 180, 255, 0.12)',
+            width: 1.5,
+            curveness: 0.5
+        },
+
+        /* 选中/高亮 */
+        emphasis: {
+            focus: 'descendant',
+            itemStyle: {
+                shadowBlur: 20,
+                shadowColor: 'rgba(100,180,255,0.5)'
+            },
+            lineStyle: {
+                width: 2.5
+            }
+        },
+
+        blur: {
+            itemStyle: { opacity: 0.25 },
+            lineStyle: { opacity: 0.08 }
+        },
+
+        /* 展开/折叠动画 */
+        expandAndCollapse: true,
+        animationDuration: 550,
+        animationDurationUpdate: 750,
+        animationEasingUpdate: 'quinticInOut'
+    }]
+};
+
+chart.setOption(option);
+
+/* ── 响应式 ── */
+window.addEventListener('resize', function() {
+    mainEl.style.height = calcChartHeight() + 'px';
+    chart.resize();
+});
+
+/* ── 3秒后自动展开到第3层，让用户看到更多内容 ── */
+setTimeout(function() {
+    chart.setOption({
+        series: [{
+            initialTreeDepth: 3
+        }]
+    });
+}, 2500);
+</script>
+</body>
+</html>
